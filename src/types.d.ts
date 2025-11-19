@@ -17,3 +17,12 @@ export interface ProviderProps extends BaseProps {
   desc?: string;
   avatar?: string;
 }
+
+export type MessageStatus = "loading" | "streaming" | "finished";
+
+export interface MessageProps extends BaseProps {
+  content: string;
+  type: "question" | "answer";
+  conversationId: number;
+  status?: MessageStatus;
+}

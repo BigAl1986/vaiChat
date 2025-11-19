@@ -34,5 +34,20 @@ console.log(
 
 import { createApp } from "vue";
 import App from "./App.vue";
+import { createMemoryHistory, createRouter, RouteRecordRaw } from "vue-router";
+import Home from "./views/Home.vue";
+import Conversations from "./views/Conversations.vue";
+import Settings from "./views/Settings.vue";
 
-createApp(App).mount("#app");
+const routes: RouteRecordRaw[] = [
+  { path: "/", component: Home },
+  { path: "/conversations", component: Conversations },
+  { path: "/settings", component: Settings },
+];
+
+const router = createRouter({
+  history: createMemoryHistory(),
+  routes,
+});
+
+createApp(App).use(router).mount("#app");

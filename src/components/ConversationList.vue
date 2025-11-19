@@ -1,23 +1,27 @@
 import { ConversationProps } from '../types';
 <template>
   <div class="conversation-list">
-    <div
-      class="item border-gray-300 border-t cursor-pointer bg-white hover:bg-gray-100 p-2"
+    <router-link
       v-for="item in items"
       :key="item.id"
+      :to="`/conversations?id=${item.id}`"
     >
-      <a href="#">
-        <div
-          class="flex justify-between items-center text-sm leading-5 text-gray-500"
-        >
-          <span>{{ item.selectedModel }}</span>
-          <span>{{ item.updatedAt }}</span>
-        </div>
-        <h2 class="font-semibold leading-6 text-gray-900 truncate">
-          {{ item.title }}
-        </h2>
-      </a>
-    </div>
+      <div
+        class="item border-gray-300 border-t cursor-pointer bg-white hover:bg-gray-100 p-2"
+      >
+        <a href="#">
+          <div
+            class="flex justify-between items-center text-sm leading-5 text-gray-500"
+          >
+            <span>{{ item.selectedModel }}</span>
+            <span>{{ item.updatedAt }}</span>
+          </div>
+          <h2 class="font-semibold leading-6 text-gray-900 truncate">
+            {{ item.title }}
+          </h2>
+        </a>
+      </div>
+    </router-link>
   </div>
 </template>
 
