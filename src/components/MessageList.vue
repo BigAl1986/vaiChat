@@ -24,7 +24,7 @@
             v-else
           >
             <template v-if="message.status === 'loading'">
-              <Icon icon="eos-icons:three-dots-loading" class="mr-2" />
+              <Icon icon="eos-icons:three-dots-loading" class="mr-2 w-5 h-5" />
             </template>
             <template v-else>
               {{ message.content }}

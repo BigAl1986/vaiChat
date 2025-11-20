@@ -1,115 +1,51 @@
 <template>
-  <div class="conversations w-[85%] mx-auto h-full flex flex-col">
-    <MessageList :messages="messages" />
+  <div
+    class="h-[10%] bg-gray-200 border-b border-t border-gray-300 flex items-center justify-between px-3"
+  >
+    <h3 class="font-semibold text-gray-900">
+      {{ currentConversation?.title }}
+    </h3>
+    <span class="text-sm text-gray-500">{{
+      currentConversation?.createdAt
+    }}</span>
+  </div>
+  <div class="conversations w-[85%] h-[90%] mx-auto flex flex-col">
+    <MessageList :messages="filteredMessages" />
     <MessageInput />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useRoute } from "vue-router";
 import MessageInput from "../components/MessageInput.vue";
 import MessageList from "../components/MessageList.vue";
-import { MessageProps } from "src/types";
+import { ConversationProps, MessageProps } from "src/types";
+import { ref, watch } from "vue";
+import { conversations, messages } from "../utils/testData";
 
-const messages: MessageProps[] = [
-  {
-    id: 1,
-    content: "什么是光合作用",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "question",
-    conversationId: 1,
-  },
-  {
-    id: 2,
-    content: "你的说法很请正确，理解的很不错,你的说法很请正确，理解的很不错",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "answer",
-    conversationId: 1,
-  },
-  {
-    id: 3,
-    content: "请告诉我更多",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "question",
-    conversationId: 1,
-  },
-  {
-    id: 4,
-    content: "你的说法很请正确，理解的很不错,你的说法很请正确，理解的很不错",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "answer",
-    conversationId: 1,
-  },
-  {
-    id: 5,
-    content: "还有更多的信息吗",
-    createdAt: "2024-07-03",
-    type: "question",
-    updatedAt: "2024-07-03",
-    conversationId: 1,
-  },
-  {
-    id: 6,
-    content: "",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "answer",
-    status: "loading",
-    conversationId: 1,
-  },
-  {
-    id: 7,
-    content: "2 什么是光合作用",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "question",
-    conversationId: 2,
-  },
-  {
-    id: 8,
-    content: "你的说法很请正确",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "answer",
-    conversationId: 2,
-  },
-  {
-    id: 9,
-    content: "请告诉我更多",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "question",
-    conversationId: 2,
-  },
-  {
-    id: 10,
-    content: "你的说法很请正确，理解的很不错,你的说法很请正确，理解的很不错",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "answer",
-    conversationId: 2,
-  },
-  {
-    id: 11,
-    content: "3 还有更多的信息吗",
-    createdAt: "2024-07-03",
-    type: "question",
-    updatedAt: "2024-07-03",
-    conversationId: 3,
-  },
-  {
-    id: 12,
-    content: "",
-    createdAt: "2024-07-03",
-    updatedAt: "2024-07-03",
-    type: "answer",
-    status: "loading",
-    conversationId: 3,
-  },
-];
+const route = useRoute();
+let conversationId = parseInt(route.params.id as string);
+const filteredMessages = ref<MessageProps[]>([]);
+filteredMessages.value = messages.filter(
+  (message) => message.conversationId === conversationId
+);
+const currentConversation = ref<ConversationProps | undefined>(undefined);
+currentConversation.value = conversations.find(
+  (conversation) => conversation.id === conversationId
+);
+
+watch(
+  () => route.params.id,
+  (newId) => {
+    conversationId = parseInt(newId as string);
+    filteredMessages.value = messages.filter(
+      (message) => message.conversationId === conversationId
+    );
+    currentConversation.value = conversations.find(
+      (conversation) => conversation.id === conversationId
+    );
+  }
+);
 </script>
 
 <style scoped></style>

@@ -41,7 +41,7 @@ import Settings from "./views/Settings.vue";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", component: Home },
-  { path: "/conversations", component: Conversations },
+  { path: "/conversations/:id", component: Conversations },
   { path: "/settings", component: Settings },
 ];
 

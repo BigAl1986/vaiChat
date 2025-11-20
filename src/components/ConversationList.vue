@@ -4,7 +4,7 @@ import { ConversationProps } from '../types';
     <router-link
       v-for="item in items"
       :key="item.id"
-      :to="`/conversations?id=${item.id}`"
+      :to="`/conversations/${item.id}`"
     >
       <div
         class="item border-gray-300 border-t cursor-pointer bg-white hover:bg-gray-100 p-2"
