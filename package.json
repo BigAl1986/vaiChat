@@ -38,8 +38,11 @@
     "vite": "^5.4.21"
   },
   "dependencies": {
+    "@baiducloud/qianfan": "^0.2.3",
     "@iconify/vue": "^5.0.0",
     "@tailwindcss/postcss": "^4.1.17",
+    "dayjs": "^1.11.19",
+    "dexie": "^4.2.1",
     "electron-squirrel-startup": "^1.0.1",
     "postcss": "^8.5.6",
     "radix-vue": "^1.9.17",

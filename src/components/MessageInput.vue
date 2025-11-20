@@ -7,19 +7,27 @@
       v-model="currentValue"
       class="flex-1 outline-green-700 w-full h-10 pl-2"
     />
-    <button
-      class="px-5 py-1 rounded-sm bg-green-700 hover:bg-green-600 text-white flex items-center absolute right-1 h-8"
+    <Button
+      color="green"
+      icon-name="radix-icons:paper-plane"
+      class="absolute right-1"
+      @click="onCreate"
     >
-      <Icon icon="radix-icons:paper-plane" class="mr-2" />
       发送
-    </button>
+    </Button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Icon } from "@iconify/vue";
+import Button from "./Button.vue";
 
+const emit = defineEmits<{ create: [value: string] }>();
 const currentValue = defineModel<string>();
+const onCreate = () => {
+  if (currentValue.value && currentValue.value.trim() !== "") {
+    emit("create", currentValue.value);
+  }
+};
 </script>
 
 <style scoped></style>

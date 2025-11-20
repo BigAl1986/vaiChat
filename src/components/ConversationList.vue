@@ -14,7 +14,7 @@ import { ConversationProps } from '../types';
             class="flex justify-between items-center text-sm leading-5 text-gray-500"
           >
             <span>{{ item.selectedModel }}</span>
-            <span>{{ item.updatedAt }}</span>
+            <span>{{ dayjs(item.updatedAt).format("YYYY-MM-DD") }}</span>
           </div>
           <h2 class="font-semibold leading-6 text-gray-900 truncate">
             {{ item.title }}
@@ -26,6 +26,7 @@ import { ConversationProps } from '../types';
 </template>
 
 <script setup lang="ts">
+import dayjs from "dayjs";
 import { ConversationProps } from "src/types";
 
 defineProps<{ items: ConversationProps[] }>();
