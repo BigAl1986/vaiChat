@@ -19,7 +19,7 @@
 import { useRoute } from "vue-router";
 import MessageInput from "../components/MessageInput.vue";
 import MessageList from "../components/MessageList.vue";
-import { ConversationProps, MessageProps } from "src/types";
+import { ConversationProps, MessageProps, UpdateMessageProp } from "src/types";
 import { onMounted, ref, watch } from "vue";
 import { db } from "../db";
 import dayjs from "dayjs";
@@ -50,6 +50,24 @@ const createAnswer = async () => {
   };
   const newMessageId = await db.messages.add(answer);
   filteredMessages.value.push({ ...answer, id: newMessageId });
+
+  if (currentConversation.value) {
+    const provider = await db.providers
+      .where({ id: currentConversation.value.providerId })
+      .first();
+    const lastQuestion = await db.messages
+      .where({ conversationId: currentConversation.value.id, type: "question" })
+      .last();
+
+    if (provider) {
+      await window.electronAPI.startChat({
+        messageId: newMessageId,
+        providerName: provider.name,
+        selectedModel: currentConversation.value.selectedModel,
+        content: lastQuestion?.content || "",
+      });
+    }
+  }
 };
 
 onMounted(async () => {
@@ -57,6 +75,27 @@ onMounted(async () => {
   if (initMessageId) {
     await createAnswer();
   }
+  window.electronAPI.onUpdatedMessage(async (streamData: UpdateMessageProp) => {
+    const { messageId, data } = streamData;
+    const currentMessage = await db.messages.where({ id: messageId }).first();
+    if (currentMessage) {
+      const updatedData: Partial<MessageProps> = {
+        content: currentMessage.content + data.result,
+        status: data.is_end ? "finished" : "streaming",
+        updatedAt: new Date().toISOString(),
+      };
+      await db.messages.update(messageId, updatedData);
+      const index = filteredMessages.value.findIndex(
+        (message) => message.id === messageId
+      );
+      if (index !== -1) {
+        filteredMessages.value[index] = {
+          ...filteredMessages.value[index],
+          ...updatedData,
+        };
+      }
+    }
+  });
 });
 
 watch(

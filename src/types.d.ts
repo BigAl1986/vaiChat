@@ -26,3 +26,20 @@ export interface MessageProps extends BaseProps {
   conversationId: number;
   status?: MessageStatus;
 }
+
+export interface CreateChatProps {
+  content: string;
+  providerName: string;
+  selectedModel: string;
+  messageId: number;
+}
+
+export interface UpdateMessageProp {
+  messageId: number;
+  data: {
+    is_end: boolean;
+    result: string;
+  };
+}
+
+export type OnUpdatedCallback = (data: UpdateMessageProp) => void;
