@@ -3,7 +3,10 @@
     <div
       class="w-[300px] bg-gray-200 h-full border-r border-gray-300 flex flex-col"
     >
-      <ConversationList :items="conversations" class="flex-1 overflow-y-auto" />
+      <ConversationList
+        :items="conversationsStore.items"
+        class="flex-1 overflow-y-auto"
+      />
       <div class="grid grid-cols-2 gap-2 p-2">
         <router-link to="/" class="w-full">
           <Button color="green" icon-name="radix-icons:chat-bubble"
@@ -26,13 +29,14 @@
 <script setup lang="ts">
 import ConversationList from "./components/ConversationList.vue";
 import Button from "./components/Button.vue";
-import { onMounted, ref } from "vue";
-import { db, initProviders } from "./db";
-import { ConversationProps } from "./types";
+import { onMounted } from "vue";
+import { initProviders } from "./db";
+import { useConversationsStore } from "./store/conversations";
 
-const conversations = ref<ConversationProps[]>([]);
+const conversationsStore = useConversationsStore();
+
 onMounted(async () => {
   await initProviders();
-  conversations.value = await db.conversations.toArray();
+  conversationsStore.fetchConversations();
 });
 </script>

@@ -38,6 +38,7 @@ import { createMemoryHistory, createRouter, RouteRecordRaw } from "vue-router";
 import Home from "./views/Home.vue";
 import Conversations from "./views/Conversations.vue";
 import Settings from "./views/Settings.vue";
+import { createPinia } from "pinia";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", component: Home },
@@ -50,4 +51,6 @@ const router = createRouter({
   routes,
 });
 
-createApp(App).use(router).mount("#app");
+const store = createPinia();
+
+createApp(App).use(router).use(store).mount("#app");

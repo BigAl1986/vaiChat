@@ -1,3 +1,4 @@
+import { messages } from "./utils/testData";
 interface BaseProps {
   id: number;
   createdAt: string;
@@ -27,8 +28,13 @@ export interface MessageProps extends BaseProps {
   status?: MessageStatus;
 }
 
-export interface CreateChatProps {
+export type ChatMessage = {
+  role: "user" | "assistant";
   content: string;
+};
+
+export interface CreateChatProps {
+  messages: ChatMessage[];
   providerName: string;
   selectedModel: string;
   messageId: number;

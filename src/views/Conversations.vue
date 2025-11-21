@@ -11,7 +11,7 @@
   </div>
   <div class="conversations w-[85%] h-[90%] mx-auto flex flex-col">
     <MessageList :messages="filteredMessages" />
-    <MessageInput />
+    <MessageInput v-model="inputValue" @create="sendNewMessage" />
   </div>
 </template>
 
@@ -19,90 +19,94 @@
 import { useRoute } from "vue-router";
 import MessageInput from "../components/MessageInput.vue";
 import MessageList from "../components/MessageList.vue";
-import { ConversationProps, MessageProps, UpdateMessageProp } from "src/types";
-import { onMounted, ref, watch } from "vue";
+import { ChatMessage, MessageProps, UpdateMessageProp } from "src/types";
+import { computed, onMounted, ref, watch } from "vue";
 import { db } from "../db";
 import dayjs from "dayjs";
+import { useConversationsStore } from "../store/conversations";
+import { useMessagesStore } from "../store/messages";
 
 const route = useRoute();
-let conversationId = parseInt(route.params.id as string);
+const conversationsStore = useConversationsStore();
+const messagesStore = useMessagesStore();
+let conversationId = ref(parseInt(route.params.id as string));
 const initMessageId = parseInt(route.query.init as string);
-const filteredMessages = ref<MessageProps[]>([]);
-const currentConversation = ref<ConversationProps | undefined>(undefined);
+const filteredMessages = computed(() => messagesStore.items);
+const inputValue = ref("");
+const sendedMessages = computed((): ChatMessage[] =>
+  messagesStore.items
+    .filter((message) => message.status !== "loading")
+    .map((message) => {
+      return {
+        role: message.type === "question" ? "user" : "assistant",
+        content: message.content,
+      };
+    })
+);
+const currentConversation = computed(() =>
+  conversationsStore.getConversationById(conversationId.value)
+);
 
-const setData = async (conversationId: number) => {
-  filteredMessages.value = await db.messages
-    .where({ conversationId })
-    .sortBy("createdAt");
-  currentConversation.value = await db.conversations
-    .where({ id: conversationId })
-    .first();
+const sendNewMessage = async (question: string) => {
+  if (question) {
+    const date = new Date().toISOString();
+    await messagesStore.createMessage({
+      content: question,
+      conversationId: conversationId.value,
+      type: "question",
+      createdAt: date,
+      updatedAt: date,
+    });
+    inputValue.value = "";
+    createAnswer();
+  }
 };
 
 const createAnswer = async () => {
   const answer: Omit<MessageProps, "id"> = {
     content: "",
     type: "answer",
-    conversationId,
+    conversationId: conversationId.value,
     status: "loading",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  const newMessageId = await db.messages.add(answer);
-  filteredMessages.value.push({ ...answer, id: newMessageId });
+  const newMessageId = await messagesStore.createMessage(answer);
 
   if (currentConversation.value) {
     const provider = await db.providers
       .where({ id: currentConversation.value.providerId })
       .first();
-    const lastQuestion = await db.messages
-      .where({ conversationId: currentConversation.value.id, type: "question" })
-      .last();
+    const lastQuestion = await messagesStore.getLastQuestionByConversationId(
+      conversationId.value
+    );
 
     if (provider) {
-      await window.electronAPI.startChat({
+      window.electronAPI.startChat({
         messageId: newMessageId,
         providerName: provider.name,
         selectedModel: currentConversation.value.selectedModel,
-        content: lastQuestion?.content || "",
+        messages: sendedMessages.value,
       });
     }
   }
 };
 
 onMounted(async () => {
-  setData(conversationId);
+  messagesStore.getMessagesByConversationId(conversationId.value);
   if (initMessageId) {
     await createAnswer();
   }
   window.electronAPI.onUpdatedMessage(async (streamData: UpdateMessageProp) => {
-    const { messageId, data } = streamData;
-    const currentMessage = await db.messages.where({ id: messageId }).first();
-    if (currentMessage) {
-      const updatedData: Partial<MessageProps> = {
-        content: currentMessage.content + data.result,
-        status: data.is_end ? "finished" : "streaming",
-        updatedAt: new Date().toISOString(),
-      };
-      await db.messages.update(messageId, updatedData);
-      const index = filteredMessages.value.findIndex(
-        (message) => message.id === messageId
-      );
-      if (index !== -1) {
-        filteredMessages.value[index] = {
-          ...filteredMessages.value[index],
-          ...updatedData,
-        };
-      }
-    }
+    messagesStore.updateMessage(streamData);
   });
 });
 
 watch(
   () => route.params.id,
   (newId) => {
-    conversationId = parseInt(newId as string);
-    setData(conversationId);
+    conversationId.value = parseInt(newId as string);
+    messagesStore.getMessagesByConversationId(conversationId.value);
   }
 );
 </script>
