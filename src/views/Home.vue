@@ -4,7 +4,10 @@
       <ProviderSelect :items="providers" v-model="selectedModel" />
     </div>
     <div class="w-[80%]">
-      <MessageInput @create="createConversation" />
+      <MessageInput
+        @create="createConversation"
+        :disabled="selectedModel === ''"
+      />
     </div>
   </div>
 </template>
@@ -48,6 +51,7 @@ const createConversation = async (question: string) => {
     createdAt: currentDate,
     updatedAt: currentDate,
   });
+  conversationsStore.setActiveConversationId(conversationId);
   router.push(`/conversations/${conversationId}?init=${newMessageId}`);
 };
 </script>

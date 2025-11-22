@@ -50,5 +50,10 @@ export const useMessagesStore = defineStore("messages", {
         (item) => item.conversationId === id && item.type === "question"
       );
     },
+    isStreamingMessage: (state) => {
+      return state.items.some(
+        (item) => item.status === "loading" || item.status === "streaming"
+      );
+    },
   },
 });

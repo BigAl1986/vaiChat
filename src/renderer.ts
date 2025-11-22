@@ -34,11 +34,17 @@ console.log(
 
 import { createApp } from "vue";
 import App from "./App.vue";
-import { createMemoryHistory, createRouter, RouteRecordRaw } from "vue-router";
+import {
+  createMemoryHistory,
+  createRouter,
+  RouteLocationNormalizedGeneric,
+  RouteRecordRaw,
+} from "vue-router";
 import Home from "./views/Home.vue";
 import Conversations from "./views/Conversations.vue";
 import Settings from "./views/Settings.vue";
 import { createPinia } from "pinia";
+import { useConversationsStore } from "./store/conversations";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", component: Home },
@@ -50,7 +56,10 @@ const router = createRouter({
   history: createMemoryHistory(),
   routes,
 });
-
+router.beforeEach((to: RouteLocationNormalizedGeneric) => {
+  const store = useConversationsStore();
+  if (!to.path.startsWith("/conversations/")) store.setActiveConversationId(-1);
+});
 const store = createPinia();
 
 createApp(App).use(router).use(store).mount("#app");

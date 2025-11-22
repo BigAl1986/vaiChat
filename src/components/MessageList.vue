@@ -1,5 +1,5 @@
 <template>
-  <div class="message-list h-full overflow-y-auto">
+  <div class="message-list h-full overflow-y-auto" ref="wrapRef">
     <div
       class="message-item mb-3"
       v-for="message in messages"
@@ -40,8 +40,22 @@
 import { Icon } from "@iconify/vue";
 import dayjs from "dayjs";
 import { MessageProps } from "src/types";
+import { nextTick, onMounted, ref, watch } from "vue";
 
-defineProps<{ messages: MessageProps[] }>();
+const props = defineProps<{ messages: MessageProps[] }>();
+const wrapRef = ref<HTMLDivElement>();
+watch(
+  () => props.messages,
+  () => {
+    nextTick(() => {
+      wrapRef.value?.scrollTo({
+        top: wrapRef.value.scrollHeight,
+        behavior: "smooth",
+      });
+    });
+  }
+);
+onMounted(() => wrapRef.value?.scrollTo(0, wrapRef.value.scrollHeight));
 </script>
 
 <style scoped></style>

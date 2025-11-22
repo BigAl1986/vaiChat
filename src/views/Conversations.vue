@@ -11,7 +11,11 @@
   </div>
   <div class="conversations w-[85%] h-[90%] mx-auto flex flex-col">
     <MessageList :messages="filteredMessages" />
-    <MessageInput v-model="inputValue" @create="sendNewMessage" />
+    <MessageInput
+      v-model="inputValue"
+      @create="sendNewMessage"
+      :disabled="messagesStore.isStreamingMessage"
+    />
   </div>
 </template>
 
@@ -63,13 +67,14 @@ const sendNewMessage = async (question: string) => {
 };
 
 const createAnswer = async () => {
+  const date = new Date().toISOString();
   const answer: Omit<MessageProps, "id"> = {
     content: "",
     type: "answer",
     conversationId: conversationId.value,
     status: "loading",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: date,
+    updatedAt: date,
   };
   const newMessageId = await messagesStore.createMessage(answer);
 
@@ -77,9 +82,6 @@ const createAnswer = async () => {
     const provider = await db.providers
       .where({ id: currentConversation.value.providerId })
       .first();
-    const lastQuestion = await messagesStore.getLastQuestionByConversationId(
-      conversationId.value
-    );
 
     if (provider) {
       window.electronAPI.startChat({

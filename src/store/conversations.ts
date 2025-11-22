@@ -4,12 +4,14 @@ import { ConversationProps } from "../types";
 
 export interface ConversationsStore {
   items: ConversationProps[];
+  activeConversationId: number;
 }
 
 export const useConversationsStore = defineStore("conversations", {
   state: (): ConversationsStore => {
     return {
       items: [],
+      activeConversationId: -1,
     };
   },
   actions: {
@@ -24,6 +26,9 @@ export const useConversationsStore = defineStore("conversations", {
         id: newConversationId,
       });
       return newConversationId;
+    },
+    setActiveConversationId(id: number) {
+      this.activeConversationId = id;
     },
   },
   getters: {
