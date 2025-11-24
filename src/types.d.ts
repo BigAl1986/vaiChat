@@ -26,6 +26,7 @@ export interface MessageProps extends BaseProps {
   type: "question" | "answer";
   conversationId: number;
   status?: MessageStatus;
+  imagePath?: string;
 }
 
 export type ChatMessage = {
