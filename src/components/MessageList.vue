@@ -26,9 +26,12 @@
             <template v-if="message.status === 'loading'">
               <Icon icon="eos-icons:three-dots-loading" class="mr-2 w-5 h-5" />
             </template>
-            <template v-else>
-              {{ message.content }}
-            </template>
+            <div
+              class="prose prose-slate prose-headings:my-2 prose-li:my-0 prose-ul:my-1 prose-p:my-0 prose-pre:p-0 prose-hr:my-1"
+              v-else
+            >
+              <VueMarkdown :source="message.content" :plugins="plugins" />
+            </div>
           </div>
         </div>
       </div>
@@ -40,22 +43,17 @@
 import { Icon } from "@iconify/vue";
 import dayjs from "dayjs";
 import { MessageProps } from "src/types";
-import { nextTick, onMounted, ref, watch } from "vue";
+import { ref } from "vue";
+import VueMarkdown from "vue-markdown-render";
+import markdownItHighlightjs from "markdown-it-highlightjs";
 
-const props = defineProps<{ messages: MessageProps[] }>();
+const plugins = [markdownItHighlightjs];
+defineProps<{ messages: MessageProps[] }>();
 const wrapRef = ref<HTMLDivElement>();
-watch(
-  () => props.messages,
-  () => {
-    nextTick(() => {
-      wrapRef.value?.scrollTo({
-        top: wrapRef.value.scrollHeight,
-        behavior: "smooth",
-      });
-    });
-  }
-);
-onMounted(() => wrapRef.value?.scrollTo(0, wrapRef.value.scrollHeight));
+
+defineExpose({
+  ref: wrapRef,
+});
 </script>
 
 <style scoped></style>

@@ -45,6 +45,7 @@ import Conversations from "./views/Conversations.vue";
 import Settings from "./views/Settings.vue";
 import { createPinia } from "pinia";
 import { useConversationsStore } from "./store/conversations";
+import "highlight.js/styles/github-dark-dimmed.min.css";
 
 const routes: RouteRecordRaw[] = [
   { path: "/", component: Home },

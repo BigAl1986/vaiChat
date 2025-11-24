@@ -49,3 +49,7 @@ export interface UpdateMessageProp {
 }
 
 export type OnUpdatedCallback = (data: UpdateMessageProp) => void;
+
+export interface HTMLDivInstance {
+  ref: HTMLDivElement;
+}

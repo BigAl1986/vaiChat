@@ -10,7 +10,7 @@
     }}</span>
   </div>
   <div class="conversations w-[85%] h-[90%] mx-auto flex flex-col">
-    <MessageList :messages="filteredMessages" />
+    <MessageList :messages="filteredMessages" ref="messageListRef" />
     <MessageInput
       v-model="inputValue"
       @create="sendNewMessage"
@@ -23,8 +23,13 @@
 import { useRoute } from "vue-router";
 import MessageInput from "../components/MessageInput.vue";
 import MessageList from "../components/MessageList.vue";
-import { ChatMessage, MessageProps, UpdateMessageProp } from "src/types";
-import { computed, onMounted, ref, watch } from "vue";
+import {
+  ChatMessage,
+  HTMLDivInstance,
+  MessageProps,
+  UpdateMessageProp,
+} from "src/types";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { db } from "../db";
 import dayjs from "dayjs";
 import { useConversationsStore } from "../store/conversations";
@@ -37,6 +42,7 @@ let conversationId = ref(parseInt(route.params.id as string));
 const initMessageId = parseInt(route.query.init as string);
 const filteredMessages = computed(() => messagesStore.items);
 const inputValue = ref("");
+const messageListRef = ref<HTMLDivInstance>();
 const sendedMessages = computed((): ChatMessage[] =>
   messagesStore.items
     .filter((message) => message.status !== "loading")
@@ -77,6 +83,7 @@ const createAnswer = async () => {
     updatedAt: date,
   };
   const newMessageId = await messagesStore.createMessage(answer);
+  await scrollToEnd();
 
   if (currentConversation.value) {
     const provider = await db.providers
@@ -93,22 +100,40 @@ const createAnswer = async () => {
     }
   }
 };
+const scrollToEnd = async () => {
+  await nextTick();
+  if (messageListRef.value) {
+    messageListRef.value.ref.scrollTo({
+      top: messageListRef.value.ref.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+};
 
 onMounted(async () => {
-  messagesStore.getMessagesByConversationId(conversationId.value);
+  await messagesStore.getMessagesByConversationId(conversationId.value);
+  await scrollToEnd();
   if (initMessageId) {
     await createAnswer();
   }
+  let messageListHeight = 0;
   window.electronAPI.onUpdatedMessage(async (streamData: UpdateMessageProp) => {
     messagesStore.updateMessage(streamData);
+    await nextTick();
+    const newHeight = messageListRef.value?.ref.scrollHeight;
+    if (newHeight && newHeight > messageListHeight) {
+      messageListHeight = newHeight;
+      await scrollToEnd();
+    }
   });
 });
 
 watch(
   () => route.params.id,
-  (newId) => {
+  async (newId) => {
     conversationId.value = parseInt(newId as string);
-    messagesStore.getMessagesByConversationId(conversationId.value);
+    await messagesStore.getMessagesByConversationId(conversationId.value);
+    await scrollToEnd();
   }
 );
 </script>
