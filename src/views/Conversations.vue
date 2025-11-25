@@ -50,14 +50,24 @@ const sendedMessages = computed((): ChatMessage[] =>
       return {
         role: message.type === "question" ? "user" : "assistant",
         content: message.content,
+        ...(message.imagePath && { imagePath: message.imagePath }),
       };
     })
 );
 const currentConversation = computed(() =>
   conversationsStore.getConversationById(conversationId.value)
 );
+let copiedImagePath: string | undefined;
 
-const sendNewMessage = async (question: string) => {
+const sendNewMessage = async (question: string, imagePath?: string) => {
+  if (imagePath) {
+    try {
+      copiedImagePath = await window.electronAPI.copyImageToUserDir(imagePath);
+      // window.electronAPI.saveImageToUserDir(image);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   if (question) {
     const date = new Date().toISOString();
     await messagesStore.createMessage({
@@ -66,7 +76,9 @@ const sendNewMessage = async (question: string) => {
       type: "question",
       createdAt: date,
       updatedAt: date,
+      ...(copiedImagePath && { imagePath: copiedImagePath }),
     });
+
     inputValue.value = "";
     createAnswer();
   }

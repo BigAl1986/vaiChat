@@ -17,6 +17,12 @@
             class="message-answer bg-green-700 text-white p-2 rounded-md"
             v-if="message.type === 'question'"
           >
+            <img
+              v-if="!!message.imagePath"
+              :src="`safe-file://${message.imagePath}`"
+              alt="message image"
+              class="h-24 w-24 object-cover rounded block"
+            />
             {{ message.content }}
           </div>
           <div

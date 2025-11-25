@@ -1,10 +1,12 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, net, protocol } from "electron";
 import path from "node:path";
+import fs from "fs/promises";
 import started from "electron-squirrel-startup";
 import "dotenv/config";
 import { CreateChatProps, UpdateMessageProp } from "./types";
 import { ChatCompletion } from "@baiducloud/qianfan";
 import OpenAI from "openai";
+import { convertMessages } from "./utils/helper";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -21,8 +23,39 @@ const createWindow = async () => {
     },
   });
 
+  protocol.handle("safe-file", async (req) => {
+    const filePath = req.url.slice(5);
+    return net.fetch(filePath);
+  });
+
+  ipcMain.handle("copy-image-to-user-dir", async (event, imagePath: string) => {
+    console.log("imagePath===", imagePath);
+    const userDataPath = app.getPath("userData");
+    const imagesDir = path.join(userDataPath, "images");
+    await fs.mkdir(imagesDir, { recursive: true });
+    const fileName = path.basename(imagePath);
+    const destPath = path.join(imagesDir, fileName);
+    await fs.copyFile(imagePath, destPath);
+    return destPath;
+  });
+
+  ipcMain.on("save-image-to-user-dir", async (event, image: File) => {
+    console.log("image===", image);
+
+    const userDataPath = app.getPath("userData");
+    const imagesDir = path.join(userDataPath, "images");
+    await fs.mkdir(imagesDir, { recursive: true });
+    const fileName = image.name;
+    const destPath = path.join(imagesDir, fileName);
+    await fs.writeFile(destPath, image.stream());
+
+    mainWindow.webContents.send("update-destPath", destPath);
+  });
+
   ipcMain.on("start-chat", async (event, data: CreateChatProps) => {
     const { providerName, messages, messageId, selectedModel } = data;
+    const convertedMessages = await convertMessages(messages);
+
     if (providerName === "qianfan") {
       const client = new ChatCompletion();
       const stream = await client.chat(
@@ -49,20 +82,20 @@ const createWindow = async () => {
         baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
       });
       const stream = await client.chat.completions.create({
-        messages,
+        messages: convertedMessages,
         model: selectedModel,
         stream: true,
       });
       for await (const chunk of stream) {
         const choice = chunk.choices[0];
-        const content = {
+        const response: UpdateMessageProp = {
           messageId,
           data: {
             is_end: choice.finish_reason === "stop",
             result: choice.delta.content || "",
           },
         };
-        mainWindow.webContents.send("update-message", content);
+        mainWindow.webContents.send("update-message", response);
       }
     }
   });

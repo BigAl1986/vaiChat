@@ -32,6 +32,7 @@ export interface MessageProps extends BaseProps {
 export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+  imagePath?: string;
 };
 
 export interface CreateChatProps {
@@ -49,7 +50,9 @@ export interface UpdateMessageProp {
   };
 }
 
-export type OnUpdatedCallback = (data: UpdateMessageProp) => void;
+export type OnUpdateMessageCallback = (data: UpdateMessageProp) => void;
+
+export type OnUpdateDestPathCallback = (data: string) => void;
 
 export interface HTMLDivInstance {
   ref: HTMLDivElement;

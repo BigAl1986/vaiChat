@@ -28,7 +28,7 @@
         type="text"
         v-model="currentValue"
         :disabled="disabled"
-        class="flex-1 outline-0 h-10 pl-1"
+        class="flex-1 outline-0 pl-1"
       />
       <Button
         color="green"
@@ -47,7 +47,10 @@ import { computed, ref } from "vue";
 import Button from "./Button.vue";
 import { Icon } from "@iconify/vue";
 
-const emit = defineEmits<{ create: [value: string] }>();
+const emit = defineEmits<{
+  create: [value: string, imagePath: string | undefined];
+  // create: [value: string, image: File | undefined];
+}>();
 const props = defineProps<{ disabled?: boolean }>();
 const currentValue = defineModel<string>("");
 
@@ -61,25 +64,24 @@ const buttonDisabled = computed(
 );
 const onCreate = () => {
   if (currentValue.value && currentValue.value.trim() !== "") {
-    emit("create", currentValue.value);
+    // @ts-ignore
+    emit("create", currentValue.value, selectedImage?.path);
+    // emit("create", currentValue.value, selectedImage);
     currentValue.value = "";
+    imagePreview.value = "";
   }
 };
 const handleTriggerUpload = () => {
   if (props.disabled) return;
   uploadRef.value?.click();
 };
+// let selectedImage: File | null = null;
+let selectedImage: File | undefined = undefined;
 const handleUpload = (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
-    const selectedImage = target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      console.log(e.target?.result);
-
-      imagePreview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(selectedImage);
+    selectedImage = target.files[0];
+    imagePreview.value = window.URL.createObjectURL(selectedImage);
   }
 };
 </script>
