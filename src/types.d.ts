@@ -42,6 +42,13 @@ export interface CreateChatProps {
   messageId: number;
 }
 
+export interface BaiduChunkProp {
+  is_end: boolean;
+  result: string;
+}
+
+export interface CommonChunkProp extends BaiduChunkProp {}
+
 export interface UpdateMessageProp {
   messageId: number;
   data: {
