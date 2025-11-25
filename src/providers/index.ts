@@ -14,6 +14,11 @@ export const createProvider = (providerName: string): BaseProvider => {
         process.env["ALI_API_KEY"] as string,
         "https://dashscope.aliyuncs.com/compatible-mode/v1"
       );
+    case "deepseek":
+      return new OpenAIProvider(
+        process.env["DEEPSEEK_API_KEY"] as string,
+        "https://api.deepseek.com/v1"
+      );
     default:
       throw new Error(`Unsupported provideer: ${providerName}`);
   }
