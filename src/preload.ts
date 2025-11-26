@@ -30,3 +30,10 @@ contextBridge.exposeInMainWorld("appConfig", {
   set: (k: ConfigKey, v: string | number): Promise<any> =>
     ipcRenderer.invoke("config/set", k, v) as Promise<any>,
 });
+
+contextBridge.exposeInMainWorld("electronI18n", {
+  getLocale: (): Promise<string> =>
+    ipcRenderer.invoke("i18n/getLocale") as Promise<string>,
+  t: (key: string): Promise<string> =>
+    ipcRenderer.invoke("i18n/t", key) as Promise<string>,
+});

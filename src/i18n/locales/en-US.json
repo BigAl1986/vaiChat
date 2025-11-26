@@ -1,10 +1,13 @@
 {
   "settings": {
     "title": "Settings",
+    "general": "General Settings",
+    "model": "Model Language",
     "language": "Language",
-    "fontSize": "Font Size (px)",
     "languageZhCN": "中文（简体）",
-    "languageEnUS": "English"
+    "languageEnUS": "English",
+    "fontSize": "Font Size",
+    "modelLanguage": "Model Language Settings"
   },
   "home": {
     "title": "AI Chat Application",

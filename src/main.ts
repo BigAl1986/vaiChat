@@ -5,6 +5,7 @@ import started from "electron-squirrel-startup";
 import "dotenv/config";
 import { Config, CreateChatProps } from "./types";
 import { createProvider } from "./providers";
+import i18n from "./i18n";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -62,6 +63,10 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.js"),
     },
   });
+
+  // 暴露 i18n 接口给渲染进程
+  ipcMain.handle("i18n/getLocale", (_ev) => i18n.global.locale.valueOf());
+  ipcMain.handle("i18n/t", (_ev, key: string) => i18n.global.t(key));
 
   ipcMain.handle("config/get", async () => await loadConfig());
   ipcMain.handle("config/getKey", async (_ev, key: keyof Config) => {

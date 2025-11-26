@@ -2,68 +2,127 @@
   <div class="settings">
     <h3>{{ $t("settings.title") }}</h3>
 
-    <div class="row">
-      <label>{{ $t("settings.language") }}</label>
+    <TabsRoot v-model="activeTab" class="tabs">
+      <TabsList class="tabs-list">
+        <TabsTrigger
+          value="general"
+          class="tabs-trigger"
+          :class="{ active: activeTab === 'general' }"
+          >{{ $t("settings.general") }}</TabsTrigger
+        >
+        <TabsTrigger
+          value="model"
+          class="tabs-trigger"
+          :class="{ active: activeTab === 'model' }"
+          >{{ $t("settings.model") }}</TabsTrigger
+        >
+        <TabsIndicator class="tabs-indicator" :style="indicatorStyle" />
+      </TabsList>
 
-      <SelectRoot v-model="language">
-        <SelectTrigger class="select-trigger">
-          <SelectValue placeholder="请选择语言">
-            {{
-              language === "zh-CN"
-                ? $t("settings.languageZhCN")
-                : $t("settings.languageEnUS")
-            }}
-          </SelectValue>
-        </SelectTrigger>
+      <TabsContent value="general">
+        <div class="row">
+          <Label>{{ $t("settings.language") }}</Label>
 
-        <SelectPortal>
-          <SelectContent class="bg-white rounded-md shadow-md z-100 border">
-            <SelectViewport class="p-2">
-              <SelectItem value="zh-CN">
-                <SelectItemText>{{
-                  $t("settings.languageZhCN")
-                }}</SelectItemText>
-              </SelectItem>
-              <SelectItem value="en-US">
-                <SelectItemText>{{
-                  $t("settings.languageEnUS")
-                }}</SelectItemText>
-              </SelectItem>
-            </SelectViewport>
-          </SelectContent>
-        </SelectPortal>
-      </SelectRoot>
-    </div>
+          <SelectRoot v-model="language">
+            <SelectTrigger class="select-trigger">
+              <SelectValue placeholder="请选择语言">
+                {{
+                  language === "zh-CN"
+                    ? $t("settings.languageZhCN")
+                    : $t("settings.languageEnUS")
+                }}
+              </SelectValue>
+            </SelectTrigger>
 
-    <div class="row">
-      <label>{{ $t("settings.fontSize") }}</label>
+            <SelectPortal>
+              <SelectContent class="bg-white rounded-md shadow-md z-100 border">
+                <SelectViewport class="p-2">
+                  <SelectItem value="zh-CN">
+                    <SelectItemText>{{
+                      $t("settings.languageZhCN")
+                    }}</SelectItemText>
+                  </SelectItem>
+                  <SelectItem value="en-US">
+                    <SelectItemText>{{
+                      $t("settings.languageEnUS")
+                    }}</SelectItemText>
+                  </SelectItem>
+                </SelectViewport>
+              </SelectContent>
+            </SelectPortal>
+          </SelectRoot>
+        </div>
 
-      <NumberFieldRoot
-        v-model.number="fontSize"
-        class="number-field"
-        aria-label="字体大小"
-      >
-        <NumberFieldDecrement class="nf-btn">-</NumberFieldDecrement>
+        <div class="row">
+          <Label>{{ $t("settings.fontSize") }}</Label>
 
-        <NumberFieldInput
-          v-model.number="fontSize"
-          :min="MIN"
-          :max="MAX"
-          step="1"
-          class="number-input"
-          aria-label="font-size-input"
-        />
+          <NumberFieldRoot
+            v-model.number="fontSize"
+            class="number-field"
+            aria-label="字体大小"
+          >
+            <NumberFieldDecrement class="nf-btn">-</NumberFieldDecrement>
 
-        <NumberFieldIncrement class="nf-btn">+</NumberFieldIncrement>
-      </NumberFieldRoot>
+            <NumberFieldInput
+              v-model.number="fontSize"
+              :min="MIN"
+              :max="MAX"
+              step="1"
+              class="number-input"
+              aria-label="font-size-input"
+            />
 
-      <span class="font-size-display">{{ fontSize }} px</span>
-    </div>
+            <NumberFieldIncrement class="nf-btn">+</NumberFieldIncrement>
+          </NumberFieldRoot>
+
+          <span class="font-size-display">{{ fontSize }} px</span>
+        </div>
+      </TabsContent>
+
+      <TabsContent value="model">
+        <div class="accordion-container">
+          <AccordionRoot type="single" collapsible>
+            <AccordionItem
+              v-for="provider in providers"
+              :key="provider.id"
+              :value="provider.id.toString()"
+              class="border border-gray-300 rounded-md p-2 mb-2"
+            >
+              <AccordionHeader>
+                <AccordionTrigger
+                  class="w-full flex items-center justify-between accordion-trigger"
+                >
+                  <span>{{ provider.name }}</span>
+                  <Icon icon="radix-icons:chevron-right" class="icon" />
+                </AccordionTrigger>
+              </AccordionHeader>
+              <AccordionContent>
+                <div class="accordion-content">
+                  <div
+                    class="flex mb-1 items-center"
+                    v-for="conf in configs[provider.name]"
+                    :key="conf"
+                  >
+                    <label :for="conf" class="w-24">{{ conf }}</label>
+                    <input
+                      type="text"
+                      :id="conf"
+                      :name="conf"
+                      class="flex-1 px-2 py-1 border rounded-md border-gray-300"
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </AccordionRoot>
+        </div>
+      </TabsContent>
+    </TabsRoot>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, computed } from "vue";
 import { useI18n } from "vue-i18n";
 import {
   SelectRoot,
@@ -78,14 +137,41 @@ import {
   NumberFieldInput,
   NumberFieldDecrement,
   NumberFieldIncrement,
+  Label,
+  TabsRoot,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  TabsIndicator,
+  AccordionRoot,
+  AccordionItem,
+  AccordionHeader,
+  AccordionTrigger,
+  AccordionContent,
 } from "radix-vue";
-
-const { locale } = useI18n();
+import { db } from "../db";
+import { Icon } from "@iconify/vue";
+import { ProviderProps } from "src/types";
 
 const language = ref<string>("zh-CN");
 const fontSize = ref<number>(14);
 const MIN = 10;
 const MAX = 48;
+const activeTab = ref<string>("general");
+const providers = ref<ProviderProps[]>([]);
+const { locale } = useI18n();
+const configs: { [key: string]: string[] } = {
+  qianfan: ["access-key", "secret-key"],
+  dashscope: ["api-key", "base-url"],
+  deepseek: ["api-key", "base-url"],
+};
+
+const indicatorStyle = computed(() => {
+  const left = activeTab.value === "general" ? 0 : "50%";
+  return {
+    left,
+  };
+});
 
 function clamp(v: number) {
   if (v < MIN) return MIN;
@@ -107,10 +193,27 @@ async function load() {
   applyFontSize(loaded);
 
   // 同步 i18n locale
-  const appLocale = (await window.electronI18n.getLocale()) as
-    | "zh-CN"
-    | "en-US";
-  locale.value = appLocale;
+  try {
+    const appLocale = (await window.electronI18n.getLocale()) as
+      | "zh-CN"
+      | "en-US";
+    locale.value = appLocale;
+  } catch (error) {
+    console.error("init locale error", error);
+  }
+
+  // 加载 providers 数据
+  await loadProviders();
+}
+
+async function loadProviders() {
+  try {
+    // 从 db 中获取 providers 数据
+    providers.value = await db.providers.toArray();
+  } catch (e) {
+    console.error("load providers error", e);
+    providers.value = [];
+  }
 }
 
 async function saveFontSize(val: number) {
@@ -141,9 +244,7 @@ watch(
   language,
   async (val) => {
     try {
-      // 更新 i18n locale
       locale.value = val as "zh-CN" | "en-US";
-      // 保存配置到主进程
       await window.appConfig.set("language", val);
     } catch (e) {
       console.error("save language error", e);
@@ -165,9 +266,6 @@ onMounted(load);
   align-items: center;
   gap: 12px;
   margin: 10px 0;
-}
-.row label {
-  width: 120px;
 }
 .select-trigger {
   min-width: 160px;
@@ -207,5 +305,54 @@ onMounted(load);
   margin-left: 8px;
   min-width: 56px;
   text-align: left;
+}
+.tabs {
+  margin-bottom: 16px;
+}
+.tabs-list {
+  border-bottom: 2px solid #ccc;
+  display: flex;
+  gap: 16px;
+  position: relative;
+}
+.tabs-trigger {
+  flex: 1;
+  padding: 8px 16px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  white-space: nowrap;
+}
+.tabs-trigger.active {
+  font-weight: bold;
+  color: #007bff;
+}
+.tabs-indicator {
+  width: 50%;
+  height: 2px;
+  background: #007bff;
+  position: absolute;
+  bottom: -2px;
+  transition:
+    left 0.3s ease,
+    width 0.3s ease;
+}
+.accordion-container {
+  margin-top: 16px;
+}
+.accordion-trigger[data-state="open"] .icon {
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+.accordion-content {
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+.provider-details {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
 }
 </style>

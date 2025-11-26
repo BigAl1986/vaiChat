@@ -14,7 +14,7 @@
           }}</Button>
         </router-link>
         <router-link to="/settings" class="w-full">
-          <Button color="green" plain icon-name="radix-icons:chat-bubble">{{
+          <Button color="green" plain icon-name="radix-icons:gear">{{
             $t("settings.title")
           }}</Button>
         </router-link>
@@ -41,6 +41,8 @@ const { locale } = useI18n();
 onMounted(async () => {
   await initProviders();
   conversationsStore.fetchConversations();
+  const cfg = await window.appConfig.get();
+  locale.value = cfg.language ?? locale.value;
 });
 
 // 监听 i18n locale 变化，同时更新文档语言属性

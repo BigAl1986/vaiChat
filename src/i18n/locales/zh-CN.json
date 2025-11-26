@@ -1,10 +1,13 @@
 {
   "settings": {
-    "title": "应用设置",
+    "title": "系统设置",
+    "general": "通用设置",
+    "model": "模型语言",
     "language": "语言",
-    "fontSize": "字体大小 (px)",
     "languageZhCN": "中文（简体）",
-    "languageEnUS": "English"
+    "languageEnUS": "English",
+    "fontSize": "字体大小",
+    "modelLanguage": "模型语言设置"
   },
   "home": {
     "title": "AI 聊天应用",
