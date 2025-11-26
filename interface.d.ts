@@ -15,5 +15,13 @@ export interface IElectronAPI {
 declare global {
   interface Window {
     electronAPI: IElectronAPI;
+    appConfig: {
+      get: () => Promise<{ language: string; fontSize: number }>;
+      getKey: (k: "language" | "fontSize") => Promise<string | number>;
+      set: (k: "language" | "fontSize", v: string | number) => Promise<any>;
+    };
+    electronI18n: {
+      getLocale(): Promise<string>;
+    };
   }
 }

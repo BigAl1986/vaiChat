@@ -64,3 +64,7 @@ export type OnUpdateDestPathCallback = (data: string) => void;
 export interface HTMLDivInstance {
   ref: HTMLDivElement;
 }
+
+export type Config = { language: string; fontSize: number };
+
+export type ConfigKey = "language" | "fontSize";

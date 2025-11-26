@@ -1,0 +1,49 @@
+{
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "fontSize": "Font Size (px)",
+    "languageZhCN": "中文（简体）",
+    "languageEnUS": "English"
+  },
+  "home": {
+    "title": "AI Chat Application",
+    "newChat": "New Chat",
+    "welcomeMessage": "Welcome to AI Chat Application",
+    "startChatting": "Start Chatting"
+  },
+  "conversations": {
+    "title": "Conversation",
+    "inputPlaceholder": "Type your question...",
+    "send": "Send",
+    "delete": "Delete",
+    "confirm": "Confirm delete this conversation?",
+    "cancel": "Cancel",
+    "noMessages": "No messages",
+    "loading": "Loading..."
+  },
+  "common": {
+    "back": "Back",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "error": "Error",
+    "success": "Success"
+  },
+  "components": {
+    "provider": {
+      "label": "Provider",
+      "placeholder": "Select provider"
+    },
+    "messageInput": {
+      "previewAlt": "image preview",
+      "uploadAria": "upload image",
+      "uploadTitle": "Upload image",
+      "placeholder": "Type a message…",
+      "inputAria": "message input",
+      "sendAria": "send message"
+    }
+  }
+}

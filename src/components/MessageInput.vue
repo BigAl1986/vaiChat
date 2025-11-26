@@ -5,22 +5,24 @@
     <div v-if="!!imagePreview">
       <img
         :src="imagePreview"
-        alt="preview"
+        :alt="t('components.messageInput.previewAlt')"
         class="h-24 w-24 object-cover rounded"
       />
     </div>
     <div class="flex items-center">
       <input
         type="file"
-        accept="image/"
+        accept="image/*"
         class="hidden"
         ref="uploadRef"
         @change="handleUpload"
+        :aria-label="t('components.messageInput.uploadAria')"
       />
       <Icon
         icon="radix-icons:image"
         width="24"
         height="24"
+        :title="t('components.messageInput.uploadTitle')"
         :class="disabled ? ' cursor-not-allowed opacity-50' : ' cursor-pointer'"
         @click="handleTriggerUpload"
       />
@@ -29,14 +31,17 @@
         v-model="currentValue"
         :disabled="disabled"
         class="flex-1 outline-0 pl-1"
+        :placeholder="t('components.messageInput.placeholder')"
+        :aria-label="t('components.messageInput.inputAria')"
       />
       <Button
         color="green"
         icon-name="radix-icons:paper-plane"
         :disabled="buttonDisabled"
         @click="onCreate"
+        :aria-label="t('components.messageInput.sendAria')"
       >
-        发送
+        {{ t("conversations.send") }}
       </Button>
     </div>
   </div>
@@ -46,6 +51,9 @@
 import { computed, ref } from "vue";
 import Button from "./Button.vue";
 import { Icon } from "@iconify/vue";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 
 const emit = defineEmits<{
   create: [value: string, imagePath: string | undefined];

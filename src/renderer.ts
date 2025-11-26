@@ -33,7 +33,10 @@ console.log(
 );
 
 import { createApp } from "vue";
+import { createI18n } from "vue-i18n";
 import App from "./App.vue";
+import zh from "./i18n/locales/zh-CN.json";
+import en from "./i18n/locales/en-US.json";
 import {
   createMemoryHistory,
   createRouter,
@@ -63,4 +66,35 @@ router.beforeEach((to: RouteLocationNormalizedGeneric) => {
 });
 const store = createPinia();
 
-createApp(App).use(router).use(store).mount("#app");
+type MessageSchema = typeof zh;
+
+// 创建 i18n 实例
+const i18n = createI18n<{ message: MessageSchema }, "zh-CN" | "en-US">({
+  legacy: false,
+  locale: "zh-CN",
+  fallbackLocale: "zh-CN",
+  messages: {
+    "zh-CN": zh,
+    "en-US": en,
+  },
+});
+
+const app = createApp(App);
+
+// 应用启动后从主进程同步语言配置
+async function initLocale() {
+  try {
+    const locale = (await window.electronI18n.getLocale()) as "zh-CN" | "en-US";
+    i18n.global.locale = locale;
+  } catch (e) {
+    console.error("init locale error", e);
+  }
+}
+
+app.use(router);
+app.use(i18n);
+app.use(store);
+
+initLocale().then(() => {
+  app.mount("#app");
+});

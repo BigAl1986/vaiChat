@@ -3,12 +3,54 @@ import path from "node:path";
 import fs from "fs/promises";
 import started from "electron-squirrel-startup";
 import "dotenv/config";
-import { CreateChatProps } from "./types";
+import { Config, CreateChatProps } from "./types";
 import { createProvider } from "./providers";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
+}
+
+const defaultConfig: Config = { language: "zh-CN", fontSize: 14 };
+
+async function getConfigPath(): Promise<string> {
+  return path.join(app.getPath("userData"), "app-config.json");
+}
+
+async function loadConfig(): Promise<Config> {
+  try {
+    const configPath = await getConfigPath();
+    const raw = await fs.readFile(configPath, "utf8");
+    return { ...defaultConfig, ...(JSON.parse(raw) as Partial<Config>) };
+  } catch (e: any) {
+    // 如果文件不存在，则写入默认配置并返回默认值
+    if (e && (e.code === "ENOENT" || e.code === "ENOTDIR")) {
+      try {
+        const configPath = await getConfigPath();
+        await fs.writeFile(
+          configPath,
+          JSON.stringify(defaultConfig, null, 2),
+          "utf8"
+        );
+      } catch (writeErr) {
+        console.error("write default config error", writeErr);
+      }
+      return { ...defaultConfig };
+    }
+    console.error("loadConfig error", e);
+    return { ...defaultConfig };
+  }
+}
+
+async function saveConfig(cfg: Config): Promise<boolean> {
+  try {
+    const configPath = await getConfigPath();
+    await fs.writeFile(configPath, JSON.stringify(cfg, null, 2), "utf8");
+    return true;
+  } catch (e) {
+    console.error("saveConfig error", e);
+    return false;
+  }
 }
 
 const createWindow = async () => {
@@ -20,6 +62,22 @@ const createWindow = async () => {
       preload: path.join(__dirname, "preload.js"),
     },
   });
+
+  ipcMain.handle("config/get", async () => await loadConfig());
+  ipcMain.handle("config/getKey", async (_ev, key: keyof Config) => {
+    const cfg = await loadConfig();
+    return cfg[key];
+  });
+  ipcMain.handle(
+    "config/set",
+    async (_ev, key: keyof Config, value: string | number) => {
+      const cfg = await loadConfig();
+      // @ts-ignore
+      cfg[key] = value as any;
+      await saveConfig(cfg);
+      return cfg;
+    }
+  );
 
   protocol.handle("safe-file", async (req) => {
     const filePath = req.url.slice(5);

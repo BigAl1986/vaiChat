@@ -1,0 +1,49 @@
+{
+  "settings": {
+    "title": "应用设置",
+    "language": "语言",
+    "fontSize": "字体大小 (px)",
+    "languageZhCN": "中文（简体）",
+    "languageEnUS": "English"
+  },
+  "home": {
+    "title": "AI 聊天应用",
+    "newChat": "新建对话",
+    "welcomeMessage": "欢迎使用 AI 聊天应用",
+    "startChatting": "开始聊天"
+  },
+  "conversations": {
+    "title": "对话",
+    "inputPlaceholder": "输入你的问题...",
+    "send": "发送",
+    "delete": "删除",
+    "confirm": "确认删除此对话？",
+    "cancel": "取消",
+    "noMessages": "暂无消息",
+    "loading": "加载中..."
+  },
+  "common": {
+    "back": "返回",
+    "confirm": "确认",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "save": "保存",
+    "error": "错误",
+    "success": "成功"
+  },
+  "components": {
+    "provider": {
+      "label": "提供者",
+      "placeholder": "请选择提供者"
+    },
+    "messageInput": {
+      "previewAlt": "图片预览",
+      "uploadAria": "上传图片",
+      "uploadTitle": "上传图片",
+      "placeholder": "输入消息…",
+      "inputAria": "消息输入框",
+      "sendAria": "发送消息"
+    }
+  }
+}

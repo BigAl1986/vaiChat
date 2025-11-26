@@ -12,14 +12,17 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script lang="ts" setup>
 import { computed, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import ProviderSelect from "../components/ProviderSelect.vue";
 import MessageInput from "../components/MessageInput.vue";
 import { ProviderProps } from "src/types";
 import { db } from "../db";
-import { useRouter } from "vue-router";
 import { useConversationsStore } from "../store/conversations";
+
+const router = useRouter();
+const store = useConversationsStore();
 
 const selectedModel = ref("");
 const modelInfo = computed(() => {
@@ -27,8 +30,6 @@ const modelInfo = computed(() => {
   return { providerId, model };
 });
 const providers = ref<ProviderProps[]>([]);
-const router = useRouter();
-const conversationsStore = useConversationsStore();
 let copiedImagePath: string | undefined;
 
 onMounted(async () => {
@@ -51,7 +52,7 @@ const createConversation = async (question: string, imagePath?: string) => {
       console.error(error);
     }
   }
-  const conversationId = await conversationsStore.createConversation({
+  const conversationId = await store.createConversation({
     title: question,
     providerId: parseInt(providerId),
     selectedModel: model,
@@ -66,7 +67,7 @@ const createConversation = async (question: string, imagePath?: string) => {
     updatedAt: currentDate,
     ...(copiedImagePath && { imagePath: copiedImagePath }),
   });
-  conversationsStore.setActiveConversationId(conversationId);
+  store.setActiveConversationId(conversationId);
   router.push(`/conversations/${conversationId}?init=${newMessageId}`);
 };
 </script>

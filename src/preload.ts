@@ -6,6 +6,8 @@ import {
   CreateChatProps,
   OnUpdateMessageCallback,
   OnUpdateDestPathCallback,
+  Config,
+  ConfigKey,
 } from "./types";
 
 contextBridge.exposeInMainWorld("electronAPI", {
@@ -18,4 +20,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.send("save-image-to-user-dir", image),
   onUpdatedDestPast: (callback: OnUpdateDestPathCallback) =>
     ipcRenderer.on("update-destPath", (event, data) => callback(data)),
+});
+
+contextBridge.exposeInMainWorld("appConfig", {
+  get: (): Promise<Config> =>
+    ipcRenderer.invoke("config/get") as Promise<Config>,
+  getKey: (k: ConfigKey): Promise<string | number> =>
+    ipcRenderer.invoke("config/getKey", k) as Promise<string | number>,
+  set: (k: ConfigKey, v: string | number): Promise<any> =>
+    ipcRenderer.invoke("config/set", k, v) as Promise<any>,
 });
