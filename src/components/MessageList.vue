@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
 import dayjs from "dayjs";
-import { MessageProps } from "src/types";
+import { MessageProps } from "../types";
 import { ref } from "vue";
 import VueMarkdown from "vue-markdown-render";
 import markdownItHighlightjs from "markdown-it-highlightjs";

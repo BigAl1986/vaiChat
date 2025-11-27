@@ -85,6 +85,6 @@ app.use(router);
 app.use(i18n);
 app.use(store);
 
-initLocale().then(() => {
+// initLocale().then(() => {
   app.mount("#app");
-});
+// });

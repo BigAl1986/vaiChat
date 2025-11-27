@@ -3,9 +3,12 @@ import path from "node:path";
 import fs from "fs/promises";
 import started from "electron-squirrel-startup";
 import "dotenv/config";
-import type { Config, CreateChatProps } from "./types";
+import type { Config, CreateChatProps, SaveImagePayload } from "./types";
 import { createProvider } from "./providers";
 import i18n from "./i18n";
+import url from "url";
+import { lookup } from "mime-types";
+import { pathToFileURL } from "node:url";
 
 if (started) {
   app.quit();
@@ -68,6 +71,17 @@ async function saveConfig(cfg: Config): Promise<boolean> {
   }
 }
 
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: 'safe-file',
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+    },
+  },
+]);
+
 const createWindow = async () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -76,6 +90,18 @@ const createWindow = async () => {
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
+  });
+  
+  protocol.handle("safe-file", async (req) => {
+    const userDataPath = app.getPath('userData')
+    const imageDir = path.join(userDataPath, 'images')
+    const filePath = path.join(
+      decodeURIComponent(req.url.slice('safe-file:/'.length))
+    )
+    const filename = path.basename(filePath)
+    const fileAddr = path.join(imageDir, filename)
+    const newFilePath = pathToFileURL(fileAddr).toString()
+    return net.fetch(newFilePath)
   });
 
   // 暴露 i18n 接口给渲染进程
@@ -105,36 +131,20 @@ const createWindow = async () => {
     }
   );
 
-  protocol.handle("safe-file", async (req) => {
-    const filePath = req.url.slice(5);
-    return net.fetch(filePath);
-  });
+  ipcMain.handle(
+    "save-image-to-user-dir",
+    async (_event, image: SaveImagePayload) => {
+      const userDataPath = app.getPath("userData");
+      const imagesDir = path.join(userDataPath, "images");
+      await fs.mkdir(imagesDir, { recursive: true });
+      const destPath = path.join(imagesDir, image.name);
+      const buffer = Buffer.from(new Uint8Array(image.buffer));
+      await fs.writeFile(destPath, buffer);
+      return destPath;
+    }
+  );
 
-  ipcMain.handle("copy-image-to-user-dir", async (event, imagePath: string) => {
-    console.log("imagePath===", imagePath);
-    const userDataPath = app.getPath("userData");
-    const imagesDir = path.join(userDataPath, "images");
-    await fs.mkdir(imagesDir, { recursive: true });
-    const fileName = path.basename(imagePath);
-    const destPath = path.join(imagesDir, fileName);
-    await fs.copyFile(imagePath, destPath);
-    return destPath;
-  });
-
-  ipcMain.on("save-image-to-user-dir", async (event, image: File) => {
-    console.log("image===", image);
-
-    const userDataPath = app.getPath("userData");
-    const imagesDir = path.join(userDataPath, "images");
-    await fs.mkdir(imagesDir, { recursive: true });
-    const fileName = image.name;
-    const destPath = path.join(imagesDir, fileName);
-    await fs.writeFile(destPath, image.stream());
-
-    mainWindow.webContents.send("update-destPath", destPath);
-  });
-
-  const emitChatError = (messageId: number, error: unknown) => {
+  const emitChatError = (messageId: number, error: any) => {
     const baseMessage =
       error instanceof Error
         ? error.message || "未知错误"
@@ -142,7 +152,7 @@ const createWindow = async () => {
           ? error
           : "未知错误";
     const hint = "请前往系统设置 → 模型中填写对应配置后重试。";
-    const message = baseMessage ? `${baseMessage}\n\n${hint}` : hint;
+    const message = error.status === 400 ? '模型不支持发送图片' : error.status === 401 ?  baseMessage ? `${baseMessage}\n\n${hint}` : hint : error.message;
     mainWindow.webContents.send("update-message", {
       messageId,
       data: {

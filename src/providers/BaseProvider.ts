@@ -1,4 +1,4 @@
-import { ChatMessage, CommonChunkProp } from "src/types";
+import { ChatMessage, CommonChunkProp } from "../types";
 
 export abstract class BaseProvider {
   abstract chat(

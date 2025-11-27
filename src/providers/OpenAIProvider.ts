@@ -14,7 +14,7 @@ export class OpenAIProvider extends BaseProvider {
     const convertedMessages = await convertMessages(messages);
     const stream = await this.client.chat.completions.create({
       model,
-      messages: convertedMessages,
+      messages: convertedMessages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
       stream: true,
     });
     const self = this as any;

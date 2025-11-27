@@ -28,7 +28,7 @@ import {
   HTMLDivInstance,
   MessageProps,
   UpdateMessageProp,
-} from "src/types";
+} from "../types";
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { db } from "../db";
 import dayjs from "dayjs";
@@ -57,17 +57,22 @@ const sendedMessages = computed((): ChatMessage[] =>
 const currentConversation = computed(() =>
   conversationsStore.getConversationById(conversationId.value)
 );
-let copiedImagePath: string | undefined;
-
-const sendNewMessage = async (question: string, imagePath?: string) => {
-  if (imagePath) {
-    try {
-      copiedImagePath = await window.electronAPI.copyImageToUserDir(imagePath);
-      // window.electronAPI.saveImageToUserDir(image);
-    } catch (error) {
-      console.error(error);
-    }
+async function persistImageToUserDir(image?: File) {
+  if (!image) return undefined;
+  try {
+    const buffer = await image.arrayBuffer();
+    return await window.electronAPI.saveImageToUserDir({
+      name: image.name,
+      buffer,
+    });
+  } catch (error) {
+    console.error("save image error", error);
+    return undefined;
   }
+}
+
+const sendNewMessage = async (question: string, image?: File) => {
+  const copiedImagePath = await persistImageToUserDir(image);
   if (question) {
     const date = new Date().toISOString();
     await messagesStore.createMessage({

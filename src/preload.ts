@@ -5,21 +5,17 @@ import { contextBridge, ipcRenderer } from "electron";
 import type {
   CreateChatProps,
   OnUpdateMessageCallback,
-  OnUpdateDestPathCallback,
   Config,
-  ConfigKey
+  ConfigKey,
+  SaveImagePayload,
 } from "./types";
 
 contextBridge.exposeInMainWorld("electronAPI", {
   startChat: (data: CreateChatProps) => ipcRenderer.send("start-chat", data),
   onUpdatedMessage: (callback: OnUpdateMessageCallback) =>
     ipcRenderer.on("update-message", (event, data) => callback(data)),
-  copyImageToUserDir: (imagePath: string) =>
-    ipcRenderer.invoke("copy-image-to-user-dir", imagePath),
-  saveImageToUserDir: (image: File) =>
-    ipcRenderer.send("save-image-to-user-dir", image),
-  onUpdatedDestPast: (callback: OnUpdateDestPathCallback) =>
-    ipcRenderer.on("update-destPath", (event, data) => callback(data)),
+  saveImageToUserDir: (image: SaveImagePayload): Promise<string> =>
+    ipcRenderer.invoke("save-image-to-user-dir", image),
 });
 
 contextBridge.exposeInMainWorld("appConfig", {

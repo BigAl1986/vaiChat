@@ -60,7 +60,7 @@ import {
   SelectItemIndicator,
   SelectSeparator,
 } from "radix-vue";
-import { ProviderProps } from "src/types";
+import { ProviderProps } from "../types";
 
 defineProps<{ items: ProviderProps[] }>();
 const currentValue = defineModel<string>();

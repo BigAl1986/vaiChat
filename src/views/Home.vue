@@ -17,7 +17,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import ProviderSelect from "../components/ProviderSelect.vue";
 import MessageInput from "../components/MessageInput.vue";
-import { ProviderProps } from "src/types";
+import { ProviderProps } from "../types";
 import { db } from "../db";
 import { useConversationsStore } from "../store/conversations";
 
@@ -30,28 +30,29 @@ const modelInfo = computed(() => {
   return { providerId, model };
 });
 const providers = ref<ProviderProps[]>([]);
-let copiedImagePath: string | undefined;
 
 onMounted(async () => {
   providers.value = await db.providers.toArray();
-  window.electronAPI.onUpdatedDestPast(async (destPath: string) => {
-    console.log("destPath===", destPath);
-
-    copiedImagePath = destPath;
-  });
 });
 
-const createConversation = async (question: string, imagePath?: string) => {
+async function persistImageToUserDir(image?: File) {
+  if (!image) return undefined;
+  try {
+    const buffer = await image.arrayBuffer();
+    return await window.electronAPI.saveImageToUserDir({
+      name: image.name,
+      buffer,
+    });
+  } catch (error) {
+    console.error("save image error", error);
+    return undefined;
+  }
+}
+
+const createConversation = async (question: string, image?: File) => {
   const { providerId, model } = modelInfo.value;
   const currentDate = new Date().toISOString();
-  if (imagePath) {
-    try {
-      copiedImagePath = await window.electronAPI.copyImageToUserDir(imagePath);
-      // window.electronAPI.saveImageToUserDir(image);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const copiedImagePath = await persistImageToUserDir(image);
   const conversationId = await store.createConversation({
     title: question,
     providerId: parseInt(providerId),

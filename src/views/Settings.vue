@@ -152,7 +152,7 @@ import {
 } from "radix-vue";
 import { db } from "../db";
 import { Icon } from "@iconify/vue";
-import { ProviderProps } from "src/types";
+import { ProviderProps } from "../types";
 
 const language = ref<string>("zh-CN");
 const fontSize = ref<number>(14);
@@ -196,14 +196,14 @@ async function load() {
   providerConfigs.value = cfg.providerConfigs ?? {};
 
   // 同步 i18n locale
-  try {
-    const appLocale = (await window.electronI18n.getLocale()) as
-      | "zh-CN"
-      | "en-US";
-    locale.value = appLocale;
-  } catch (error) {
-    console.error("init locale error", error);
-  }
+  // try {
+  //   const appLocale = (await window.electronI18n.getLocale()) as
+  //     | "zh-CN"
+  //     | "en-US";
+  //   locale.value = appLocale;
+  // } catch (error) {
+  //   console.error("init locale error", error);
+  // }
 
   // 加载 providers 数据
   await loadProviders();

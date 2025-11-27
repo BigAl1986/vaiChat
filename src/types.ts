@@ -1,3 +1,4 @@
+import { messages } from "./utils/testData";
 interface BaseProps {
   id: number;
   createdAt: string;
@@ -45,11 +46,11 @@ export interface CreateChatProps {
 export interface BaiduChunkProp {
   is_end: boolean;
   result: string;
-  error?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface CommonChunkProp extends BaiduChunkProp {}
+export interface CommonChunkProp extends BaiduChunkProp {
+  error?: boolean;
+}
 
 export interface UpdateMessageProp {
   messageId: number;
@@ -61,8 +62,6 @@ export interface UpdateMessageProp {
 }
 
 export type OnUpdateMessageCallback = (data: UpdateMessageProp) => void;
-
-export type OnUpdateDestPathCallback = (data: string) => void;
 
 export interface HTMLDivInstance {
   ref: HTMLDivElement;
@@ -77,3 +76,29 @@ export type Config = {
 };
 
 export type ConfigKey = "language" | "fontSize" | "providerConfigs";
+
+export interface SaveImagePayload {
+  name: string;
+  buffer: ArrayBuffer;
+}
+
+declare global {
+  interface Window {
+    electronAPI: IElectronAPI;
+    appConfig: {
+      get: () => Promise<Config>;
+      getKey: (k: ConfigKey) => Promise<Config[keyof Config]>;
+      set: (k: ConfigKey, v: Config[keyof Config]) => Promise<Config>;
+    };
+    electronI18n: {
+      getLocale(): Promise<string>;
+    };
+  }
+}
+
+export interface IElectronAPI {
+  startChat: (data: CreateChatProps) => void;
+  onUpdatedMessage: (callback: OnUpdateMessageCallback) => any;
+  saveImageToUserDir: (image: SaveImagePayload) => Promise<string>;
+}
+

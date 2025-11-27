@@ -1,4 +1,4 @@
-import type { ProviderConfigMap } from "src/types";
+import type { ProviderConfigMap } from "../types";
 import { BaseProvider } from "./BaseProvider";
 import { OpenAIProvider } from "./OpenAIProvider";
 import { QianfanProvider } from "./QianfanProvider";

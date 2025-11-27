@@ -1,17 +1,15 @@
-import {
+import type {
   Config,
   ConfigKey,
   CreateChatProps,
   OnUpdateMessageCallback,
-  OnUpdateDestPathCallback,
-} from "src/types";
+  SaveImagePayload,
+} from "./src/types";
 
 export interface IElectronAPI {
   startChat: (data: CreateChatProps) => void;
   onUpdatedMessage: (callback: OnUpdateMessageCallback) => any;
-  copyImageToUserDir: (imagePath: string) => Promise<string>;
-  saveImageToUserDir: (image: File) => void;
-  onUpdatedDestPast: (callback: OnUpdateDestPathCallback) => any;
+  saveImageToUserDir: (image: SaveImagePayload) => Promise<string>;
 }
 
 declare global {

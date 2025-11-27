@@ -1,4 +1,4 @@
-import { ConversationProps, MessageProps, ProviderProps } from "src/types";
+import { ConversationProps, MessageProps, ProviderProps } from "../types";
 
 export const conversations: ConversationProps[] = [
   {

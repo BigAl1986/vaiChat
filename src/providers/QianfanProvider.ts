@@ -1,6 +1,6 @@
 import { ChatCompletion } from "@baiducloud/qianfan";
 import { BaseProvider } from "./BaseProvider";
-import { BaiduChunkProp, ChatMessage, CommonChunkProp } from "src/types";
+import { BaiduChunkProp, ChatMessage, CommonChunkProp } from "../types";
 
 export class QianfanProvider extends BaseProvider {
   private client: any;
@@ -21,11 +21,11 @@ export class QianfanProvider extends BaseProvider {
       },
       model
     );
-    const self = this;
+    const transformChunk = this.transformResponse.bind(this);
     return {
       async *[Symbol.asyncIterator]() {
         for await (const chunk of stream) {
-          yield self.transformResponse(chunk);
+          yield transformChunk(chunk);
         }
       },
     };

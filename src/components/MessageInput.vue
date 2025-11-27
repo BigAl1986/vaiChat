@@ -56,8 +56,7 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 
 const emit = defineEmits<{
-  create: [value: string, imagePath: string | undefined];
-  // create: [value: string, image: File | undefined];
+  create: [value: string, image: File | undefined];
 }>();
 const props = defineProps<{ disabled?: boolean }>();
 const currentValue = defineModel<string>("");
@@ -72,11 +71,13 @@ const buttonDisabled = computed(
 );
 const onCreate = () => {
   if (currentValue.value && currentValue.value.trim() !== "") {
-    // @ts-ignore
-    emit("create", currentValue.value, selectedImage?.path);
-    // emit("create", currentValue.value, selectedImage);
+    emit("create", currentValue.value, selectedImage);
     currentValue.value = "";
     imagePreview.value = "";
+    selectedImage = undefined;
+    if (uploadRef.value) {
+      uploadRef.value.value = "";
+    }
   }
 };
 const handleTriggerUpload = () => {
