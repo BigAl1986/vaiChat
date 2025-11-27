@@ -6,9 +6,6 @@ import { convertMessages } from "../utils/helper";
 export class OpenAIProvider extends BaseProvider {
   private client: OpenAI;
   constructor(apiKey: string, baseURL: string) {
-    console.log("apiKey===", apiKey);
-    console.log("baseURL===", baseURL);
-    
     super();
     this.client = new OpenAI({ apiKey, baseURL });
   }

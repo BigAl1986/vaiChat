@@ -1,4 +1,3 @@
-import { messages } from "./utils/testData";
 interface BaseProps {
   id: number;
   createdAt: string;
@@ -46,11 +45,11 @@ export interface CreateChatProps {
 export interface BaiduChunkProp {
   is_end: boolean;
   result: string;
-}
-
-export interface CommonChunkProp extends BaiduChunkProp {
   error?: boolean;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface CommonChunkProp extends BaiduChunkProp {}
 
 export interface UpdateMessageProp {
   messageId: number;
