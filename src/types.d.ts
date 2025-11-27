@@ -19,7 +19,7 @@ export interface ProviderProps extends BaseProps {
   avatar?: string;
 }
 
-export type MessageStatus = "loading" | "streaming" | "finished";
+export type MessageStatus = "loading" | "streaming" | "finished" | "error";
 
 export interface MessageProps extends BaseProps {
   content: string;
@@ -27,6 +27,7 @@ export interface MessageProps extends BaseProps {
   conversationId: number;
   status?: MessageStatus;
   imagePath?: string;
+  isError?: boolean;
 }
 
 export type ChatMessage = {
@@ -47,13 +48,16 @@ export interface BaiduChunkProp {
   result: string;
 }
 
-export interface CommonChunkProp extends BaiduChunkProp {}
+export interface CommonChunkProp extends BaiduChunkProp {
+  error?: boolean;
+}
 
 export interface UpdateMessageProp {
   messageId: number;
   data: {
     is_end: boolean;
     result: string;
+    error?: boolean;
   };
 }
 
@@ -65,6 +69,12 @@ export interface HTMLDivInstance {
   ref: HTMLDivElement;
 }
 
-export type Config = { language: string; fontSize: number };
+export type ProviderConfigMap = Record<string, Record<string, string>>;
 
-export type ConfigKey = "language" | "fontSize";
+export type Config = {
+  language: string;
+  fontSize: number;
+  providerConfigs: ProviderConfigMap;
+};
+
+export type ConfigKey = "language" | "fontSize" | "providerConfigs";

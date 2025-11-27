@@ -1,4 +1,6 @@
 import {
+  Config,
+  ConfigKey,
   CreateChatProps,
   OnUpdateMessageCallback,
   OnUpdateDestPathCallback,
@@ -16,9 +18,9 @@ declare global {
   interface Window {
     electronAPI: IElectronAPI;
     appConfig: {
-      get: () => Promise<{ language: string; fontSize: number }>;
-      getKey: (k: "language" | "fontSize") => Promise<string | number>;
-      set: (k: "language" | "fontSize", v: string | number) => Promise<any>;
+      get: () => Promise<Config>;
+      getKey: (k: ConfigKey) => Promise<Config[keyof Config]>;
+      set: (k: ConfigKey, v: Config[keyof Config]) => Promise<Config>;
     };
     electronI18n: {
       getLocale(): Promise<string>;

@@ -3,19 +3,30 @@ import path from "node:path";
 import fs from "fs/promises";
 import started from "electron-squirrel-startup";
 import "dotenv/config";
-import { Config, CreateChatProps } from "./types";
+import type { Config, CreateChatProps } from "./types";
 import { createProvider } from "./providers";
 import i18n from "./i18n";
 
-// Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();
 }
 
-const defaultConfig: Config = { language: "zh-CN", fontSize: 14 };
+const defaultConfig: Config = {
+  language: "zh-CN",
+  fontSize: 14,
+  providerConfigs: {},
+};
 
 async function getConfigPath(): Promise<string> {
   return path.join(app.getPath("userData"), "app-config.json");
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error
+  );
 }
 
 async function loadConfig(): Promise<Config> {
@@ -23,9 +34,12 @@ async function loadConfig(): Promise<Config> {
     const configPath = await getConfigPath();
     const raw = await fs.readFile(configPath, "utf8");
     return { ...defaultConfig, ...(JSON.parse(raw) as Partial<Config>) };
-  } catch (e: any) {
+  } catch (e: unknown) {
     // 如果文件不存在，则写入默认配置并返回默认值
-    if (e && (e.code === "ENOENT" || e.code === "ENOTDIR")) {
+    if (
+      isNodeError(e) &&
+      (e.code === "ENOENT" || e.code === "ENOTDIR")
+    ) {
       try {
         const configPath = await getConfigPath();
         await fs.writeFile(
@@ -65,22 +79,29 @@ const createWindow = async () => {
   });
 
   // 暴露 i18n 接口给渲染进程
-  ipcMain.handle("i18n/getLocale", (_ev) => i18n.global.locale.valueOf());
-  ipcMain.handle("i18n/t", (_ev, key: string) => i18n.global.t(key));
+  ipcMain.handle("i18n/getLocale", (event) => {
+    void event;
+    return i18n.global.locale.valueOf();
+  });
+  ipcMain.handle("i18n/t", (event, key: string) => {
+    void event;
+    return i18n.global.t(key);
+  });
 
   ipcMain.handle("config/get", async () => await loadConfig());
-  ipcMain.handle("config/getKey", async (_ev, key: keyof Config) => {
+  ipcMain.handle("config/getKey", async (event, key: keyof Config) => {
+    void event;
     const cfg = await loadConfig();
     return cfg[key];
   });
   ipcMain.handle(
     "config/set",
-    async (_ev, key: keyof Config, value: string | number) => {
+    async (event, key: keyof Config, value: Config[keyof Config]) => {
+      void event;
       const cfg = await loadConfig();
-      // @ts-ignore
-      cfg[key] = value as any;
-      await saveConfig(cfg);
-      return cfg;
+      const updatedCfg = { ...cfg, [key]: value } as Config;
+      await saveConfig(updatedCfg);
+      return updatedCfg;
     }
   );
 
@@ -113,16 +134,40 @@ const createWindow = async () => {
     mainWindow.webContents.send("update-destPath", destPath);
   });
 
-  ipcMain.on("start-chat", async (event, data: CreateChatProps) => {
+  const emitChatError = (messageId: number, error: unknown) => {
+    const baseMessage =
+      error instanceof Error
+        ? error.message || "未知错误"
+        : typeof error === "string"
+          ? error
+          : "未知错误";
+    const hint = "请前往系统设置 → 模型中填写对应配置后重试。";
+    const message = baseMessage ? `${baseMessage}\n\n${hint}` : hint;
+    mainWindow.webContents.send("update-message", {
+      messageId,
+      data: {
+        is_end: true,
+        result: message,
+        error: true,
+      },
+    });
+  };
+
+  ipcMain.on("start-chat", async (_event, data: CreateChatProps) => {
     const { providerName, messages, messageId, selectedModel } = data;
 
-    const provider = createProvider(providerName);
-    const stream = await provider.chat(messages, selectedModel);
-    for await (const data of stream) {
-      mainWindow.webContents.send("update-message", {
-        messageId,
-        data,
-      });
+    try {
+      const cfg = await loadConfig();
+      const provider = createProvider(providerName, cfg.providerConfigs);
+      const stream = await provider.chat(messages, selectedModel);
+      for await (const chunk of stream) {
+        mainWindow.webContents.send("update-message", {
+          messageId,
+          data: chunk,
+        });
+      }
+    } catch (error) {
+      emitChatError(messageId, error);
     }
   });
 

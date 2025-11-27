@@ -1,23 +1,28 @@
+import type { ProviderConfigMap } from "src/types";
 import { BaseProvider } from "./BaseProvider";
 import { OpenAIProvider } from "./OpenAIProvider";
 import { QianfanProvider } from "./QianfanProvider";
 
-export const createProvider = (providerName: string): BaseProvider => {
+export const createProvider = (
+  providerName: string,
+  providerConfigs: ProviderConfigMap = {}
+): BaseProvider => {
+  const config = providerConfigs[providerName] ?? {};
   switch (providerName) {
     case "qianfan":
       return new QianfanProvider(
-        process.env["QIANFAN_ACCESS_KEY"] as string,
-        process.env["QIANFAN_SECRET_KEY"] as string
+        config["access-key"] || "",
+        config["secret-key"] || ""
       );
     case "dashscope":
       return new OpenAIProvider(
-        process.env["ALI_API_KEY"] as string,
-        "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        config["api-key"] || "",
+        config["base-url"] || ""
       );
     case "deepseek":
       return new OpenAIProvider(
-        process.env["DEEPSEEK_API_KEY"] as string,
-        "https://api.deepseek.com/v1"
+        config["api-key"] || "",
+        config["base-url"] || ""
       );
     default:
       throw new Error(`Unsupported provideer: ${providerName}`);

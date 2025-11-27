@@ -1,11 +1,14 @@
 import OpenAI from "openai";
 import { BaseProvider } from "./BaseProvider";
-import { ChatMessage, CommonChunkProp } from "../types";
+import type { ChatMessage, CommonChunkProp } from "../types";
 import { convertMessages } from "../utils/helper";
 
 export class OpenAIProvider extends BaseProvider {
   private client: OpenAI;
   constructor(apiKey: string, baseURL: string) {
+    console.log("apiKey===", apiKey);
+    console.log("baseURL===", baseURL);
+    
     super();
     this.client = new OpenAI({ apiKey, baseURL });
   }
@@ -17,7 +20,7 @@ export class OpenAIProvider extends BaseProvider {
       messages: convertedMessages,
       stream: true,
     });
-    const self = this;
+    const self = this as any;
     return {
       async *[Symbol.asyncIterator]() {
         for await (const chunk of stream) {

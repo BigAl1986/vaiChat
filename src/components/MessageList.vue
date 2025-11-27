@@ -26,12 +26,17 @@
             {{ message.content }}
           </div>
           <div
-            class="message-question bg-gray-200 text-gray-700 p-2 rounded-md"
+            class="message-question p-2 rounded-md"
+            :class="messageQuestionClass(message)"
             v-else
           >
-            <template v-if="message.status === 'loading'">
+            <template v-if="message.status === 'loading' && !message.isError">
               <Icon icon="eos-icons:three-dots-loading" class="mr-2 w-5 h-5" />
             </template>
+            <div v-else-if="message.isError" class="message-error">
+              <Icon icon="solar:danger-triangle-bold" class="w-4 h-4" />
+              <span class="ml-2">{{ message.content }}</span>
+            </div>
             <div
               class="prose prose-slate prose-headings:my-2 prose-li:my-0 prose-ul:my-1 prose-p:my-0 prose-pre:p-0 prose-hr:my-1"
               v-else
@@ -57,9 +62,23 @@ const plugins = [markdownItHighlightjs];
 defineProps<{ messages: MessageProps[] }>();
 const wrapRef = ref<HTMLDivElement>();
 
+const messageQuestionClass = (message: MessageProps) => {
+  if (message.isError) {
+    return "bg-red-50 text-red-600 border border-red-200";
+  }
+  return "bg-gray-200 text-gray-700";
+};
+
 defineExpose({
   ref: wrapRef,
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.message-error {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.4;
+}
+</style>

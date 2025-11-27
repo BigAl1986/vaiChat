@@ -105,10 +105,11 @@
                   >
                     <label :for="conf" class="w-24">{{ conf }}</label>
                     <input
-                      type="text"
+                      :type="conf === 'base-url' ? 'text' : 'password'"
                       :id="conf"
                       :name="conf"
                       class="flex-1 px-2 py-1 border rounded-md border-gray-300"
+                      v-model="providerConfigs[provider.name][conf]"
                     />
                   </div>
                 </div>
@@ -159,6 +160,7 @@ const MIN = 10;
 const MAX = 48;
 const activeTab = ref<string>("general");
 const providers = ref<ProviderProps[]>([]);
+const providerConfigs = ref<Record<string, Record<string, string>>>({});
 const { locale } = useI18n();
 const configs: { [key: string]: string[] } = {
   qianfan: ["access-key", "secret-key"],
@@ -191,6 +193,7 @@ async function load() {
   loaded = clamp(loaded);
   fontSize.value = loaded;
   applyFontSize(loaded);
+  providerConfigs.value = cfg.providerConfigs ?? {};
 
   // 同步 i18n locale
   try {
@@ -210,10 +213,25 @@ async function loadProviders() {
   try {
     // 从 db 中获取 providers 数据
     providers.value = await db.providers.toArray();
+    ensureProviderConfigsShape();
   } catch (e) {
     console.error("load providers error", e);
     providers.value = [];
   }
+}
+
+function ensureProviderConfigsShape() {
+  providers.value.forEach((provider) => {
+    const name = provider.name;
+    if (!providerConfigs.value[name]) {
+      providerConfigs.value[name] = {};
+    }
+    (configs[name] || []).forEach((conf) => {
+      if (typeof providerConfigs.value[name][conf] !== "string") {
+        providerConfigs.value[name][conf] = "";
+      }
+    });
+  });
 }
 
 async function saveFontSize(val: number) {
@@ -238,6 +256,19 @@ watch(
     await saveFontSize(v);
   },
   { immediate: false }
+);
+
+watch(
+  providerConfigs,
+  async (val) => {
+    const plainVal = JSON.parse(JSON.stringify(val));
+    try {
+      await window.appConfig.set("providerConfigs", plainVal);
+    } catch (e) {
+      console.error("save provider configs error", e);
+    }
+  },
+  { deep: true }
 );
 
 watch(

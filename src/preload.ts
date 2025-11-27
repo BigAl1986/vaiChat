@@ -2,12 +2,12 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer } from "electron";
-import {
+import type {
   CreateChatProps,
   OnUpdateMessageCallback,
   OnUpdateDestPathCallback,
   Config,
-  ConfigKey,
+  ConfigKey
 } from "./types";
 
 contextBridge.exposeInMainWorld("electronAPI", {
@@ -25,10 +25,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
 contextBridge.exposeInMainWorld("appConfig", {
   get: (): Promise<Config> =>
     ipcRenderer.invoke("config/get") as Promise<Config>,
-  getKey: (k: ConfigKey): Promise<string | number> =>
-    ipcRenderer.invoke("config/getKey", k) as Promise<string | number>,
-  set: (k: ConfigKey, v: string | number): Promise<any> =>
-    ipcRenderer.invoke("config/set", k, v) as Promise<any>,
+  getKey: (k: ConfigKey): Promise<Config[keyof Config]> =>
+    ipcRenderer.invoke("config/getKey", k) as Promise<Config[keyof Config]>,
+  set: (k: ConfigKey, v: Config[keyof Config]): Promise<Config> =>
+    ipcRenderer.invoke("config/set", k, v) as Promise<Config>,
 });
 
 contextBridge.exposeInMainWorld("electronI18n", {
