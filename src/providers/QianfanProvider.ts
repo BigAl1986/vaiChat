@@ -1,4 +1,5 @@
-import { ChatCompletion } from "@baiducloud/qianfan";
+// import { ChatCompletion } from "@baiducloud/qianfan";
+import { ChatCompletion } from "@baiducloud/qianfan/src/index";
 import { BaseProvider } from "./BaseProvider";
 import { BaiduChunkProp, ChatMessage, CommonChunkProp } from "../types";
 
@@ -9,7 +10,7 @@ export class QianfanProvider extends BaseProvider {
     this.client = new ChatCompletion({
       QIANFAN_ACCESS_KEY: accessKey,
       QIANFAN_SECRET_KEY: secretKey,
-      ENABLE_OAUTH: true,
+      ENABLE_OAUTH: false,
     });
   }
 
