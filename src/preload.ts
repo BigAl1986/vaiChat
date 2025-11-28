@@ -33,3 +33,14 @@ contextBridge.exposeInMainWorld("electronI18n", {
   t: (key: string): Promise<string> =>
     ipcRenderer.invoke("i18n/t", key) as Promise<string>,
 });
+
+contextBridge.exposeInMainWorld("menu", {
+  onNewConversation: (callback: () => void) =>
+    ipcRenderer.on("new-conversation", () => callback()),
+  onOpenSettings: (callback: () => void) =>
+    ipcRenderer.on("open-settings", () => callback()),
+  showContextMenu: (id: number) =>
+    ipcRenderer.send("show-context-menu", id),
+  onDeleteConversation: (callback: (id: number) => void) =>
+    ipcRenderer.on("delete-conversation", (event, id) => callback(id)),
+});

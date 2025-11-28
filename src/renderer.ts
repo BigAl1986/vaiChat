@@ -33,10 +33,7 @@ console.log(
 );
 
 import { createApp } from "vue";
-import { createI18n, useI18n } from "vue-i18n";
 import App from "./App.vue";
-import zh from "./i18n/locales/zh-CN.json";
-import en from "./i18n/locales/en-US.json";
 import {
   createMemoryHistory,
   createRouter,
@@ -69,22 +66,7 @@ const store = createPinia();
 
 const app = createApp(App);
 
-// 应用启动后从主进程同步语言配置
-async function initLocale() {
-  try {
-    const appLocale = (await window.electronI18n.getLocale()) as
-      | "zh-CN"
-      | "en-US";
-    i18n.global.locale = appLocale;
-  } catch (e) {
-    console.error("init locale error", e);
-  }
-}
-
 app.use(router);
 app.use(i18n);
 app.use(store);
-
-// initLocale().then(() => {
-  app.mount("#app");
-// });
+app.mount("#app");

@@ -30,6 +30,10 @@ export const useConversationsStore = defineStore("conversations", {
     setActiveConversationId(id: number) {
       this.activeConversationId = id;
     },
+    async deleteConversation(id: number) {
+      await db.conversations.delete(id);
+      this.items = this.items.filter((item) => item.id !== id);
+    },
   },
   getters: {
     getConversationById: (state) => (id: number) => {

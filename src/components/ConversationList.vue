@@ -5,6 +5,7 @@
       :key="item.id"
       :to="`/conversations/${item.id}`"
       @click="store.setActiveConversationId(item.id)"
+      @contextmenu.prevent="showContextMenu(item.id)"
     >
       <div
         class="item border-gray-300 border-t cursor-pointer hover:bg-gray-100 p-2"
@@ -39,9 +40,24 @@
 import dayjs from "dayjs";
 import { useConversationsStore } from "../store/conversations";
 import { ConversationProps } from "../types";
+import { useRouter } from "vue-router";
+import { onMounted } from "vue";
 
 defineProps<{ items: ConversationProps[] }>();
 const store = useConversationsStore();
+const router = useRouter();
+const showContextMenu = (id: number) => {
+  window.menu.showContextMenu(id);
+};
+onMounted(() => {
+  window.menu.onDeleteConversation((id) => {
+    store.deleteConversation(id);
+    if (store.activeConversationId === id) {
+      store.setActiveConversationId(-1);
+    }
+    if (router.currentRoute.value.path === `/conversations/${id}`) {
+      router.push("/");
+    }
+  });
+});
 </script>
-
-<style scoped></style>

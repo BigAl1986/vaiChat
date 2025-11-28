@@ -23,5 +23,11 @@ declare global {
     electronI18n: {
       getLocale(): Promise<string>;
     };
+    menu: {
+      onNewConversation: (callback: () => void) => void;
+      onOpenSettings: (callback: () => void) => void;
+      showContextMenu: (id: number) => Promise<void>;
+      onDeleteConversation: (callback: (id: number) => void) => void;
+    };
   }
 }

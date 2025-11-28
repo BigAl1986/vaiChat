@@ -1,4 +1,3 @@
-import { messages } from "./utils/testData";
 interface BaseProps {
   id: number;
   createdAt: string;

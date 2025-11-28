@@ -195,16 +195,6 @@ async function load() {
   applyFontSize(loaded);
   providerConfigs.value = cfg.providerConfigs ?? {};
 
-  // 同步 i18n locale
-  // try {
-  //   const appLocale = (await window.electronI18n.getLocale()) as
-  //     | "zh-CN"
-  //     | "en-US";
-  //   locale.value = appLocale;
-  // } catch (error) {
-  //   console.error("init locale error", error);
-  // }
-
   // 加载 providers 数据
   await loadProviders();
 }

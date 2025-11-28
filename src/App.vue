@@ -34,15 +34,23 @@ import { initProviders } from "./db";
 import { useConversationsStore } from "./store/conversations";
 import { useI18n } from "vue-i18n";
 import { watch } from "vue";
+import { useRouter } from "vue-router";
 
 const conversationsStore = useConversationsStore();
 const { locale } = useI18n();
+const router = useRouter();
 
 onMounted(async () => {
   await initProviders();
   conversationsStore.fetchConversations();
   const cfg = await window.appConfig.get();
   locale.value = cfg.language ?? locale.value;
+  window.menu.onNewConversation(() => {
+    router.push("/");
+  });
+  window.menu.onOpenSettings(() => {
+    router.push("/settings");
+  });
 });
 
 // 监听 i18n locale 变化，同时更新文档语言属性

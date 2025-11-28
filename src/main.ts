@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, net, protocol } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, net, protocol } from "electron";
 import path from "node:path";
 import fs from "fs/promises";
 import started from "electron-squirrel-startup";
@@ -6,9 +6,8 @@ import "dotenv/config";
 import type { Config, CreateChatProps, SaveImagePayload } from "./types";
 import { createProvider } from "./providers";
 import i18n from "./i18n";
-import url from "url";
-import { lookup } from "mime-types";
 import { pathToFileURL } from "node:url";
+import { createMenu, createTranslator, updateMenu } from "./menu";
 
 if (started) {
   app.quit();
@@ -92,6 +91,8 @@ const createWindow = async () => {
     },
   });
   
+  createMenu(mainWindow);
+
   protocol.handle("safe-file", async (req) => {
     const userDataPath = app.getPath('userData')
     const imageDir = path.join(userDataPath, 'images')
@@ -127,6 +128,7 @@ const createWindow = async () => {
       const cfg = await loadConfig();
       const updatedCfg = { ...cfg, [key]: value } as Config;
       await saveConfig(updatedCfg);
+      updateMenu(mainWindow);
       return updatedCfg;
     }
   );
@@ -151,8 +153,8 @@ const createWindow = async () => {
         : typeof error === "string"
           ? error
           : "未知错误";
-    const hint = "请前往系统设置 → 模型中填写对应配置后重试。";
-    const message = error.status === 400 ? '模型不支持发送图片' : error.status === 401 ?  baseMessage ? `${baseMessage}\n\n${hint}` : hint : error.message;
+    const hint = error.status === 400 ? '模型不支持发送图片' : "请前往系统设置 → 模型中填写对应配置后重试。";
+    const message = error.status === 400 ?  baseMessage ? `${baseMessage}\n\n${hint}` : hint : error.message;
     mainWindow.webContents.send("update-message", {
       messageId,
       data: {
@@ -162,6 +164,21 @@ const createWindow = async () => {
       },
     });
   };
+
+  ipcMain.on("show-context-menu", async (event, id: number) => {
+    const t = await createTranslator();
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (!win) return;
+    const menu = Menu.buildFromTemplate([
+      {
+        label: t("conversations.delete"),
+        click: () => {
+          win.webContents.send("delete-conversation", id);
+        },
+      },
+    ]);
+    menu.popup({ window: win });
+  });
 
   ipcMain.on("start-chat", async (_event, data: CreateChatProps) => {
     const { providerName, messages, messageId, selectedModel } = data;
