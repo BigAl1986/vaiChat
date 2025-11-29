@@ -21,13 +21,7 @@
             <span>{{ item.selectedModel }}</span>
             <span>{{ dayjs(item.updatedAt).format("YYYY-MM-DD") }}</span>
           </div>
-          <h2
-            class="font-semibold leading-6 truncate"
-            :class="{
-              'text-blue-400': item.id === store.activeConversationId,
-              'text-gray-900': item.id !== store.activeConversationId,
-            }"
-          >
+          <h2 class="font-semibold leading-6 truncate text-gray-900 conversation-title" :class="{active: item.id === store.activeConversationId}">
             {{ item.title }}
           </h2>
         </a>
@@ -61,3 +55,9 @@ onMounted(() => {
   });
 });
 </script>
+
+<style scoped>
+.conversation-title.active {
+  color: var(--theme-color, #16a34a);
+}
+</style>

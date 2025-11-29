@@ -77,6 +77,29 @@
 
           <span class="font-size-display">{{ fontSize }} px</span>
         </div>
+
+        <div class="row theme-color-row">
+          <Label>{{ $t("settings.themeColor") }}</Label>
+
+          <div class="theme-color-picker">
+            <div
+              v-for="colorOption in themeColorOptions"
+              :key="colorOption.value"
+              class="color-option"
+              :class="{ active: themeColor === colorOption.value }"
+              :style="{ backgroundColor: colorOption.value }"
+              :title="colorOption.name"
+              @click="selectThemeColor(colorOption.value)"
+              :aria-label="colorOption.name"
+            >
+              <Icon
+                v-if="themeColor === colorOption.value"
+                icon="radix-icons:check"
+                class="check-icon"
+              />
+            </div>
+          </div>
+        </div>
       </TabsContent>
 
       <TabsContent value="model">
@@ -156,17 +179,39 @@ import { ProviderProps } from "../types";
 
 const language = ref<string>("zh-CN");
 const fontSize = ref<number>(14);
+const themeColor = ref<string>("#16a34a");
 const MIN = 10;
 const MAX = 48;
 const activeTab = ref<string>("general");
 const providers = ref<ProviderProps[]>([]);
 const providerConfigs = ref<Record<string, Record<string, string>>>({});
-const { locale } = useI18n();
+const { locale, t } = useI18n();
 const configs: { [key: string]: string[] } = {
   qianfan: ["access-key", "secret-key"],
   dashscope: ["api-key", "base-url"],
   deepseek: ["api-key", "base-url"],
 };
+
+// Tailwind CSS 颜色选项（600 色阶）
+const themeColorOptions = computed(() => [
+  { name: t("settings.themeColorRed"), value: "#dc2626" }, // red-600
+  { name: t("settings.themeColorOrange"), value: "#ea580c" }, // orange-600
+  { name: t("settings.themeColorAmber"), value: "#d97706" }, // amber-600
+  { name: t("settings.themeColorYellow"), value: "#ca8a04" }, // yellow-600
+  { name: t("settings.themeColorLime"), value: "#65a30d" }, // lime-600
+  { name: t("settings.themeColorGreen"), value: "#16a34a" }, // green-600
+  { name: t("settings.themeColorEmerald"), value: "#059669" }, // emerald-600
+  { name: t("settings.themeColorTeal"), value: "#0d9488" }, // teal-600
+  { name: t("settings.themeColorCyan"), value: "#0891b2" }, // cyan-600
+  { name: t("settings.themeColorSky"), value: "#0284c7" }, // sky-600
+  { name: t("settings.themeColorBlue"), value: "#2563eb" }, // blue-600
+  { name: t("settings.themeColorIndigo"), value: "#4f46e5" }, // indigo-600
+  { name: t("settings.themeColorViolet"), value: "#7c3aed" }, // violet-600
+  { name: t("settings.themeColorPurple"), value: "#9333ea" }, // purple-600
+  { name: t("settings.themeColorFuchsia"), value: "#c026d3" }, // fuchsia-600
+  { name: t("settings.themeColorPink"), value: "#db2777" }, // pink-600
+  { name: t("settings.themeColorRose"), value: "#e11d48" }, // rose-600
+]);
 
 const indicatorStyle = computed(() => {
   const left = activeTab.value === "general" ? 0 : "50%";
@@ -185,6 +230,29 @@ function applyFontSize(size: number) {
   document.documentElement.style.fontSize = `${size}px`;
 }
 
+function applyThemeColor(color: string) {
+  document.documentElement.style.setProperty("--theme-color", color);
+  // 计算 hover 颜色（稍微变暗）
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const hoverR = Math.max(0, Math.floor(r * 0.9));
+  const hoverG = Math.max(0, Math.floor(g * 0.9));
+  const hoverB = Math.max(0, Math.floor(b * 0.9));
+  const hoverColor = `#${hoverR.toString(16).padStart(2, "0")}${hoverG.toString(16).padStart(2, "0")}${hoverB.toString(16).padStart(2, "0")}`;
+  document.documentElement.style.setProperty("--theme-color-hover", hoverColor);
+  // 计算浅色背景（用于 plain 按钮）
+  const lightR = Math.min(255, Math.floor(r + (255 - r) * 0.9));
+  const lightG = Math.min(255, Math.floor(g + (255 - g) * 0.9));
+  const lightB = Math.min(255, Math.floor(b + (255 - b) * 0.9));
+  const lightColor = `rgb(${lightR}, ${lightG}, ${lightB})`;
+  document.documentElement.style.setProperty("--theme-color-light", lightColor);
+  // 计算文字颜色（根据亮度决定使用白色还是深色）
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  const textColor = brightness > 128 ? "#1f2937" : "#ffffff";
+  document.documentElement.style.setProperty("--theme-text-color", textColor);
+}
+
 async function load() {
   const cfg = await window.appConfig.get();
   language.value = cfg.language ?? language.value;
@@ -193,6 +261,13 @@ async function load() {
   loaded = clamp(loaded);
   fontSize.value = loaded;
   applyFontSize(loaded);
+  
+  // 加载主题色，如果不在预设列表中则使用默认值
+  const savedColor = cfg.themeColor ?? themeColor.value;
+  const isValidColor = themeColorOptions.value.some(opt => opt.value === savedColor);
+  themeColor.value = isValidColor ? savedColor : themeColor.value;
+  applyThemeColor(themeColor.value);
+  
   providerConfigs.value = cfg.providerConfigs ?? {};
 
   // 加载 providers 数据
@@ -274,6 +349,20 @@ watch(
   { immediate: false }
 );
 
+function selectThemeColor(color: string) {
+  themeColor.value = color;
+  applyThemeColor(color);
+  saveThemeColor(color);
+}
+
+async function saveThemeColor(color: string) {
+  try {
+    await window.appConfig.set("themeColor", color);
+  } catch (e) {
+    console.error("save themeColor error", e);
+  }
+}
+
 onMounted(load);
 </script>
 
@@ -347,12 +436,12 @@ onMounted(load);
 }
 .tabs-trigger.active {
   font-weight: bold;
-  color: #007bff;
+  color: var(--theme-color, #16a34a);
 }
 .tabs-indicator {
   width: 50%;
   height: 2px;
-  background: #007bff;
+  background: var(--theme-color, #16a34a);
   position: absolute;
   bottom: -2px;
   transition:
@@ -375,5 +464,43 @@ onMounted(load);
   margin-top: 8px;
   font-size: 12px;
   color: #666;
+}
+.theme-color-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.theme-color-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 300px;
+}
+.color-option {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+.color-option:hover {
+  transform: scale(1.1);
+  border-color: #ccc;
+}
+.color-option.active {
+  border-color: #333;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+}
+.check-icon {
+  width: 18px;
+  height: 18px;
+  color: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 </style>

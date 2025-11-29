@@ -14,7 +14,7 @@
             {{ dayjs(message.createdAt).format("YYYY-MM-DD") }}
           </div>
           <div
-            class="message-answer bg-green-700 text-white p-2 rounded-md"
+            class="message-answer p-2 rounded-md"
             v-if="message.type === 'question'"
           >
             <img
@@ -75,6 +75,10 @@ defineExpose({
 </script>
 
 <style scoped>
+.message-answer {
+  background-color: var(--theme-color, #16a34a);
+  color: var(--theme-text-color, #ffffff);
+}
 .message-error {
   display: flex;
   align-items: center;

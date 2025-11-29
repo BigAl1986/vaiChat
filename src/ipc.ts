@@ -11,6 +11,7 @@ const defaultConfig: Config = {
   language: "zh-CN",
   fontSize: 14,
   providerConfigs: {},
+  themeColor: "#16a34a", // 默认绿色 (green-600)
 };
 
 async function getConfigPath(): Promise<string> {

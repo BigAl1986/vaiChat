@@ -21,7 +21,7 @@
               </SelectLabel>
               <SelectGroup>
                 <SelectItem
-                  class="outline-none rounded flex items-center h-7 px-6 relative text-green-700 cursor-pointer data-highlighted:bg-green-700 data-highlighted:text-white"
+                  class="provider-select-item outline-none rounded flex items-center h-7 px-6 relative cursor-pointer"
                   v-for="(model, index) in item.models"
                   :key="index"
                   :value="`${item.id}/${model}`"
@@ -66,4 +66,13 @@ defineProps<{ items: ProviderProps[] }>();
 const currentValue = defineModel<string>();
 </script>
 
-<style scoped></style>
+<style scoped>
+.provider-select-item {
+  color: var(--theme-color, #16a34a);
+}
+
+.provider-select-item[data-highlighted] {
+  background-color: var(--theme-color, #16a34a);
+  color: var(--theme-text-color, #ffffff);
+}
+</style>

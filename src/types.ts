@@ -72,9 +72,10 @@ export type Config = {
   language: string;
   fontSize: number;
   providerConfigs: ProviderConfigMap;
+  themeColor?: string;
 };
 
-export type ConfigKey = "language" | "fontSize" | "providerConfigs";
+export type ConfigKey = "language" | "fontSize" | "providerConfigs" | "themeColor";
 
 export interface SaveImagePayload {
   name: string;

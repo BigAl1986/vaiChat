@@ -1,6 +1,6 @@
 <template>
   <div
-    class="message-input border border-gray-300 rounded-lg mb-2 w-full focus-within:outline-green-700 p-1"
+    class="message-input border border-gray-300 rounded-lg mb-2 w-full p-1"
   >
     <div v-if="!!imagePreview">
       <img
@@ -95,4 +95,9 @@ const handleUpload = (e: Event) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.message-input:focus-within {
+  outline: 2px solid var(--theme-color, #16a34a);
+  outline-offset: -2px;
+}
+</style>
