@@ -6,3 +6,5 @@
 ![4](./public/4.png)
 ![5](./public/5.png)
 ![6](./public/6.png)
+### 新增主题色选择
+![7](./public/7.png)
